@@ -21,54 +21,22 @@
 
   /** checking if circles have size parameter */
   function checkSize(arr) {
-    var counter = 0,
-      flag = false;
-
-    for (var i=0; i<arr.length; i++) {
-      if (arr[i].options.size) {
-        counter += arr[i].options.size;
-      }
-    }
-
-    if (counter > 1) {
-      return false;
-    } else {
-      if (counter === 0) {
-        return false;
-      } else {
-        return counter.toFixed(2);
-      }
-    }
+    var total_size = arr.map(el => el.options.size).filter(s => s).reduce((t, s) => t + s, 0);
+    // I think that > 1 means we set it in code?
+    if ((total_size > 1) || (total_size === 0)) return false;
+    else return total_size.toFixed(2);
   }
 
   /** building custom steps array */
   function buildStepsArr(arr, number) {
-    var steps_arr = [],
-      no_size_qty = 0;
-
-    if (number === 1) {
-      return returnStepsArr(arr);
-    } else {
-      arr.forEach(function (el, index) {
-        if (!el.options.size) {
-          no_size_qty++;
-        }
-      });
-      for (var i=0; i<arr.length; i++) {
-        if (!arr[i].options.size) {
-          arr[i].options.size = (1-number)/no_size_qty;
-        }
-      };
-      return returnStepsArr(arr);
-    }
-
-    function returnStepsArr(new_arr) {
-      for (var i=0; i<new_arr.length; i++) {
-        steps_arr.push(360*new_arr[i].options.size);
+    if (number !== 1) {
+      var no_size = arr.filter(el => !el.options.size);
+      for (var i = 0; i < no_size.length; i++) {
+          no_size[i].options.size = (1-number)/no_size.length;
       }
-      return steps_arr;
     }
-  };
+    return arr.map(el => 360*el.options.size);
+  }
   
   function deg2rad(deg) {
       return (deg / 180.) * Math.PI;
