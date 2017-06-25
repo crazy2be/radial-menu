@@ -197,24 +197,19 @@
 
     /** all drawing magic is here */
     buildChildren: function () {
-      var step = 360/this.childs.length,
-        points,
-        self = this,
-        childs_length,
-        x_center = 0,
-        y_center = 0,
-        custom = checkSize(this.childs);
+      var step = 360/this.childs.length;
+      var self = this;
 
       // add flag means menu is opened
       this.isOpened = true;
       // Calculating radiuses before children builds
       this.calculateRadiuses();
       // building points for drawing
-      points = circlePoints(step, this.radiusBig, this.radiusSmall, x_center, y_center, this.options.spacing);
-      childs_length = Object.keys(points).length;
+      var points = circlePoints(step, this.radiusBig, this.radiusSmall, 0, 0, this.options.spacing);
+      var childs_length = Object.keys(points).length;
       this.g = this.mainGroup.group();
 
-      for (var i=0; i<childs_length-1; i++) {
+      for (var i = 0; i < childs_length - 1; i++) {
         (function (i) {
           // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
           // Basically the goal here is to change the diameter of the cicrle drawn when there are
