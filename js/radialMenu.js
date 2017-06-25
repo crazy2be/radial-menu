@@ -3,14 +3,18 @@
   "use strict";
 
   /** creating optins object */
-  function extend(a, b) {
+  function merge(a, b) {
     var c = {};
-    for (var key in a) {
-      if (b && b.hasOwnProperty(key)) c[key] = b[key];
-      else c[key] = a[key];
-    }
+    for (var key in a) { c[key] = a[key]; }
+    for (var key in b) { c[key] = b[key]; }
     return c;
   };
+
+  function only(o, keys) {
+    var res = {};
+    for (var i = 0; i < keys.length; i++) { res[keys[i]] = o[keys[i]]; }
+    return res;
+  }
 
   /** checking if circles have size parameter */
   function checkSize(arr) {
@@ -66,7 +70,6 @@
       "stroke-width": 1, //stroke width around every menu item, in pixels
       "spacing": 10, //amount of space between menu items
       "opacity": 1, //opacity of the main menu
-      "size": null, //if set to a float value 0-1, attempt to allow the section to take that percent of the circle. if null, size is automatically calculated by
       "font-size": 14, //font size of this item, in pixels
       "font-family": 'Verdana',
       "font-color": '#000000',
@@ -79,12 +82,11 @@
       "stroke-opacity": 1.0,
       "fill": '#FFFFFF',
       "fill-opacity": 0.5,
-      "data": null, //optionally additional object can be provided that will be sent to the callback, this could include an ID or URL to load on click
       "onclick": null, //callback, none by default
       "circles-spacing": 0,
       "start-radius": 50
     };
-    this.options = extend(this.defaults, options);
+    this.options = merge(this.defaults, options);
     this.parentOptions = this.options;
 
     if (self.Snap) {
@@ -156,7 +158,7 @@
         this.parent.open();
         this.buildChildren();
         this.parent.removeActive();
-        this.parent.addActive(this.parent.childs.indexOf(this));
+        this.parent.setActive(this.parent.childs.indexOf(this));
       }
     },
 
@@ -184,6 +186,11 @@
 
       for (var i = 0; i < childs_length - 1; i++) {
         (function (i) {
+          var attr = merge({
+            "stroke-width": self.options["stroke-width"],
+            "cursor": "pointer"
+          }, only(self.childs[i].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"]));
+
           // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
           // Basically the goal here is to change the diameter of the cicrle drawn when there are
           // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
@@ -197,21 +204,12 @@
             " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
             " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
                     points[i].after.small.x + " " + points[i].after.small.y + " Z")
-          .attr({
-            "stroke-width": self.options["stroke-width"],
-            "stroke": self.childs[i].options["stroke"],
-            "stroke-opacity": self.childs[i].options["stroke-opacity"],
-            "fill": self.childs[i].options["fill"],
-            "fill-opacity": self.childs[i].options["fill-opacity"],
-            "cursor": "pointer"
-          })
+          .attr(attr)
           .click(function () {
             if (self.childs[i].options.onclick) {
               self.childs[i].options.onclick();
             }
-            if (!self.childs[i].isOpened) {
-              self.childs[i].open(i);
-            }
+            self.childs[i].open(i);
           }));
 
           var radiusMid = (self.radiusBig + self.radiusSmall) / 2;
@@ -284,23 +282,16 @@
       var self = this;
 
       this.circles.forEach(function (el, index) {
-        el.attr({
-          "stroke": self.childs[index].options["stroke"],
-          "stroke-opacity": self.childs[index].options["stroke-opacity"],
-          "fill": self.childs[index].options["fill"],
-          "fill-opacity": self.childs[index].options["fill-opacity"]
-        });
+        el.attr(only(self.childs[index].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"]));
       });
 
       this.texts.forEach(function (el, index) {
-        el.attr({
-          "fill": self.childs[index].options["font-color"]
-        });
+        el.attr({"fill": self.childs[index].options["font-color"]});
       });
     },
 
     /** add active styles */
-    addActive: function (index) {
+    setActive: function (index) {
       this.circles[index].attr({
         "stroke": this.childs[index].options["active-stroke"],
         "stroke-opacity": this.childs[index].options["active-stroke-opacity"],
@@ -329,12 +320,12 @@
       var ch = parseInt(this.svg.getAttribute('height')) || 0;
 
       if(cw < width && ch < height){
-        this.svg.setAttributeNS (null, "width", width+"px");
-        this.svg.setAttributeNS (null, "data-left", this.svg.style.left);
+        this.svg.setAttributeNS(null, "width", width+"px");
+        this.svg.setAttributeNS(null, "data-left", this.svg.style.left);
         this.svg.style.marginLeft =  (-width / 2)+'px';
 
-        this.svg.setAttributeNS (null, "height", height+"px");
-        this.svg.setAttributeNS (null, "data-top", this.svg.style.top);
+        this.svg.setAttributeNS(null, "height", height+"px");
+        this.svg.setAttributeNS(null, "data-top", this.svg.style.top);
         this.svg.style.marginTop =  (-height / 2)+'px';
 
         this.mainGroup.transform('t'+width/2+','+height/2);
@@ -375,7 +366,7 @@
     this.parent = parent;
     this.defaults = this.parent.defaults;
     this.parentOptions = parentOptions;
-    this.options = extend(this.parentOptions, options);
+    this.options = merge(this.parentOptions, options);
     this.label = label;
 
     // empty arrays too keep radial item objects
