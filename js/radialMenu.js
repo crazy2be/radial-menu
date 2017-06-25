@@ -23,6 +23,15 @@
     if ((total_size > 1) || (total_size === 0)) return false;
     else return total_size.toFixed(2);
   }
+
+  function setAttrs(el, obj) {
+    if (!el) return;
+    // Accept either raw nodes or snap nodes interchangably.
+    if (el.node) el = el.node;
+    for (var k in obj) {
+      el.setAttribute(k, obj[k]);
+    }
+  }
   
   var deg2rad = (deg) => (deg / 180.) * Math.PI;
 
@@ -186,11 +195,6 @@
 
       for (var i = 0; i < childs_length - 1; i++) {
         (function (i) {
-          var attr = merge({
-            "stroke-width": self.options["stroke-width"],
-            "cursor": "pointer"
-          }, only(self.childs[i].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"]));
-
           // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
           // Basically the goal here is to change the diameter of the cicrle drawn when there are
           // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
@@ -204,13 +208,19 @@
             " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
             " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
                     points[i].after.small.x + " " + points[i].after.small.y + " Z")
-          .attr(attr)
           .click(function () {
             if (self.childs[i].options.onclick) {
               self.childs[i].options.onclick();
             }
             self.childs[i].open(i);
           }));
+          setAttrs(self.circles[i], merge({
+            "stroke-width": self.options["stroke-width"],
+            "cursor": "pointer"
+          }, only(self.childs[i].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"])));
+          self.circles[i].node.onclick = function () {
+            console.log("TESTING");
+          }
 
           var radiusMid = (self.radiusBig + self.radiusSmall) / 2;
           var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
@@ -219,9 +229,9 @@
           var sweep = ~~(points[i].after.big.x <= points[i+1].before.big.x);
           if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
           self.texts.push(self.g.text(0, 0, self.childs[i].label).attr({
-            "textpath": "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid
+            "textpath": "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid,
           }));
-          self.texts[i].attr({
+          setAttrs(self.texts[i], {
             "fill": self.childs[i].options["font-color"],
             "font-family": self.childs[i].options["font-family"],
             "font-size": self.childs[i].options["font-size"],
@@ -229,7 +239,7 @@
             "pointer-events": "none",
             "alignment-baseline": "baseline"
           });
-          self.texts[i].textPath.attr({
+          setAttrs(self.texts[i].textPath, {
             "startOffset": "50%",
             "alignment-baseline": "middle"
           });
@@ -282,24 +292,24 @@
       var self = this;
 
       this.circles.forEach(function (el, index) {
-        el.attr(only(self.childs[index].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"]));
+        setAttrs(el, only(self.childs[index].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"]));
       });
 
       this.texts.forEach(function (el, index) {
-        el.attr({"fill": self.childs[index].options["font-color"]});
+        setAttrs(el, {"fill": self.childs[index].options["font-color"]});
       });
     },
 
     /** add active styles */
     setActive: function (index) {
-      this.circles[index].attr({
+      setAttrs(this.circles[index], {
         "stroke": this.childs[index].options["active-stroke"],
         "stroke-opacity": this.childs[index].options["active-stroke-opacity"],
         "fill": this.childs[index].options["active-fill"],
         "fill-opacity": this.childs[index].options["active-fill-opacity"]
       });
 
-      this.texts[index].attr({
+      setAttrs(this.texts[index], {
         "fill": this.childs[index].options["active-font-color"]
       });
     },
