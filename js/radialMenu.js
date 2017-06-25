@@ -69,6 +69,10 @@
       return steps_arr;
     }
   };
+  
+  function deg2rad(deg) {
+      return (deg / 180.) * Math.PI;
+  }
 
   /** circlePoints: step, big radius, small radius, center point x/y, spacing between items */
   function circlePoints(children, step, r1, r2, cx, cy, spacing) {
@@ -89,14 +93,14 @@
     }
 
     for (var i=0, j=0; i<=360; i=custom?i+steps[j]:i+Number(step.toFixed(1)), j++) {
-      x1Before = Math.round(cx + r1 * Math.cos(Snap.rad(i-spacingR1Left))),
-      y1Before = Math.round(cy + r1 * Math.sin(Snap.rad(i-spacingR1Left))),
-      x2Before = Math.round(cx + r2 * Math.cos(Snap.rad(i-spacingR2Left))),
-      y2Before = Math.round(cy + r2 * Math.sin(Snap.rad(i-spacingR2Left))),
-      x1After = Math.round(cx + r1 * Math.cos(Snap.rad(i+spacingR1Right))),
-      y1After = Math.round(cy + r1 * Math.sin(Snap.rad(i+spacingR1Right))),
-      x2After = Math.round(cx + r2 * Math.cos(Snap.rad(i+spacingR2Right))),
-      y2After = Math.round(cy + r2 * Math.sin(Snap.rad(i+spacingR2Right)));
+      x1Before = Math.round(cx + r1 * Math.cos(deg2rad(i-spacingR1Left))),
+      y1Before = Math.round(cy + r1 * Math.sin(deg2rad(i-spacingR1Left))),
+      x2Before = Math.round(cx + r2 * Math.cos(deg2rad(i-spacingR2Left))),
+      y2Before = Math.round(cy + r2 * Math.sin(deg2rad(i-spacingR2Left))),
+      x1After = Math.round(cx + r1 * Math.cos(deg2rad(i+spacingR1Right))),
+      y1After = Math.round(cy + r1 * Math.sin(deg2rad(i+spacingR1Right))),
+      x2After = Math.round(cx + r2 * Math.cos(deg2rad(i+spacingR2Right))),
+      y2After = Math.round(cy + r2 * Math.sin(deg2rad(i+spacingR2Right)));
 
       points[flag] = {
         before: {
