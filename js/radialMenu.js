@@ -274,7 +274,6 @@
         points,
         self = this,
         childs_length,
-        matrix = new Snap.Matrix(),
         x_center = 0,
         y_center = 0,
         custom = checkSize(this.childs);
@@ -286,7 +285,6 @@
       // building points for drawing
       points = circlePoints(this.childs, step, this.radiusBig, this.radiusSmall, x_center, y_center, this.options.spacing);
       childs_length = Object.keys(points).length;
-      matrix.scale(1.2, 1.2);
       this.g = this.mainGroup.group();
 
       for (var i=0; i<childs_length-1; i++) {
