@@ -2,7 +2,6 @@
 ;(function (window) {
   "use strict";
 
-  /** creating optins object */
   function merge(a, b) {
     var c = {};
     for (var key in a) { c[key] = a[key]; }
@@ -25,7 +24,6 @@
   }
 
   function setAttrs(el, obj) {
-    if (!el) return;
     // Accept either raw nodes or snap nodes interchangably.
     if (el.node) el = el.node;
     for (var k in obj) {
@@ -107,12 +105,8 @@
 
   radialMenu.prototype = {
     init: function () {
-      var self = this;
-
-      // add svg to body
       this.body = document.querySelector("body");
-      this.xmlns = "http://www.w3.org/2000/svg";
-      this.svg = document.createElementNS (this.xmlns, "svg");
+      this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
       // radialMenu SVG elements
       this.s = Snap(this.svg);
@@ -120,16 +114,13 @@
       this.mainGroup = this.s.group();
       this.mainGroup.addClass("radialMenu-holder");
 
-      // radiuses
       this.radiusBig;
       this.radiusSmall = this.options["start-radius"];
 
-      // empty arrays too keep radial item objects
       this.childs = [];
       this.circles = [];
       this.texts = [];
 
-      // if opened
       this.isOpened = false;
     },
 
@@ -248,26 +239,15 @@
       this.addAnimationIn();
     },
 
-    /** close current item */
-    closeChildren: function () {
-      if (!this.isOpened) return;
-      if (this.g) this.addAnimationOut();
-    },
-
     /** close childs of every item */
     closeAllChildren: function () {
-      this.childs.forEach(el => el.closeChildren());
+      this.childs.forEach(el => el.close());
     },
 
     /** closing each circle */
     close: function () {
       var self = this;
-      if (!this.parent) {
-        var length = this.mainGroup.selectAll("g").length;
-        setTimeout(function () {
-          self.clearWholeMenu();
-        }, length*60);
-      }
+      if (!this.isOpened) return;
 
       if (this.g && !this.g.removed) {
         this.g.remove();
@@ -276,27 +256,18 @@
         this.isOpened = false;
         this.closeAllChildren();
       }
+
+      if (!this.parent) {
+        this.s.remove();
+      }
     },
 
-    /** remove all snapSVG elements after all circles was removed */
-    clearWholeMenu: function () {
-      this.g.remove();
-      this.circles = [];
-      this.texts = [];
-      this.isOpened = false;
-      this.s.remove();
-    },
-
-    /** remove active  */
     removeActive: function () {
-      var self = this;
-
-      this.circles.forEach(function (el, index) {
-        setAttrs(el, only(self.childs[index].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"]));
+      this.circles.forEach((el, index) => {
+        setAttrs(el, only(this.childs[index].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"]));
       });
-
-      this.texts.forEach(function (el, index) {
-        setAttrs(el, {"fill": self.childs[index].options["font-color"]});
+      this.texts.forEach((el, index) => {
+        setAttrs(el, {"fill": this.childs[index].options["font-color"]});
       });
     },
 
@@ -308,7 +279,6 @@
         "fill": this.childs[index].options["active-fill"],
         "fill-opacity": this.childs[index].options["active-fill-opacity"]
       });
-
       setAttrs(this.texts[index], {
         "fill": this.childs[index].options["active-font-color"]
       });
@@ -330,39 +300,16 @@
       var ch = parseInt(this.svg.getAttribute('height')) || 0;
 
       if(cw < width && ch < height){
-        this.svg.setAttributeNS(null, "width", width+"px");
-        this.svg.setAttributeNS(null, "data-left", this.svg.style.left);
+        this.svg.setAttribute("width", width+"px");
+        this.svg.setAttribute("data-left", this.svg.style.left);
         this.svg.style.marginLeft =  (-width / 2)+'px';
 
-        this.svg.setAttributeNS(null, "height", height+"px");
-        this.svg.setAttributeNS(null, "data-top", this.svg.style.top);
+        this.svg.setAttribute("height", height+"px");
+        this.svg.setAttribute("data-top", this.svg.style.top);
         this.svg.style.marginTop =  (-height / 2)+'px';
 
         this.mainGroup.transform('t'+width/2+','+height/2);
       }
-
-      this.g
-        .attr({
-          opacity: 0
-        })
-        .transform("r0," + x + ',' + y + "s0.5, 0.5," + cx + "," + cy);
-
-      this.g.animate({
-        transform: "r0," + x + ',' + y + "s1,1," + cx + "," + cy,
-        opacity: 1
-      } , 300, mina.easeout);
-    },
-
-    /** animating each circle out. Callback - close next level circle */
-    addAnimationOut: function () {
-      var self = this;
-
-      this.g.animate({
-        transform: "r0," + this.g.getBBox().x + ',' + this.g.getBBox().y + "s0.8, 0.8," + this.g.getBBox().cx + "," + this.g.getBBox().cy,
-        opacity: 0
-      } , 60, mina.easeout, function () {
-        self.close();
-      });
     },
 
     /** method to add children */
