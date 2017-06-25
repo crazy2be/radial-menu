@@ -32,7 +32,7 @@
   }
 
   /** circlePoints: step, big radius, small radius, center point x/y, spacing between items */
-  function circlePoints(children, step, r1, r2, cx, cy, spacing) {
+  function circlePoints(step, r1, r2, cx, cy, spacing) {
     var points = [];
     var circleLengthR1 = 2*Math.PI*r1;
     var circleLengthR2 = 2*Math.PI*r2;
@@ -151,29 +151,17 @@
 
     /** finding new radiuses. Default - +50px */
     calculateRadiuses: function () {
-      var text = "",
-        textLength,
-        circleLength,
-        textRadius;
-
-      this.radiusSmall = this.parent?this.parent.radiusBig + 10:this.radiusSmall;
+      this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.radiusSmall;
       this.radiusBig = this.radiusSmall + 50;
 
-      circleLength = 2*Math.PI*this.radiusBig;
+      var circleLength = 2*Math.PI*this.radiusBig;
 
-      this.childs.forEach(function (el) {
-        text = text + el.label;
-      });
-      textLength = this.s.text(0, 0, text);
+      var text = this.childs.reduce((text, el) => text + el.label, "");
+      var textLength = this.s.text(0, 0, text);
       textLength.toDefs();
       if (circleLength < textLength.node.clientWidth) {
-        textRadius = textLength.node.clientWidth / (2*Math.PI);
-
-        this.radiusSmall = this.parent?this.parent.radiusBig + 10:this.radiusSmall;
-        this.radiusBig = textRadius+(textRadius-this.radiusSmall)+10;
-      } else {
-        this.radiusSmall = this.parent?this.parent.radiusBig + 10:this.radiusSmall;
-        this.radiusBig = this.radiusSmall + 50;
+        var textRadius = textLength.node.clientWidth / (2*Math.PI);
+        this.radiusBig = textRadius + (textRadius-this.radiusSmall) + 10;
       }
     },
 
@@ -230,7 +218,7 @@
       // Calculating radiuses before children builds
       this.calculateRadiuses();
       // building points for drawing
-      points = circlePoints(this.childs, step, this.radiusBig, this.radiusSmall, x_center, y_center, this.options.spacing);
+      points = circlePoints(step, this.radiusBig, this.radiusSmall, x_center, y_center, this.options.spacing);
       childs_length = Object.keys(points).length;
       this.g = this.mainGroup.group();
 
