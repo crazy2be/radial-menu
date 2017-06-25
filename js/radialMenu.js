@@ -63,7 +63,7 @@
   /** radialMenu constructor */
   var radialMenu = function (options) {
     this.defaults = {
-      "stroke": 1, //stroke width around every menu item, in pixels
+      "stroke-width": 1, //stroke width around every menu item, in pixels
       "spacing": 10, //amount of space between menu items
       "opacity": 1, //opacity of the main menu
       "size": null, //if set to a float value 0-1, attempt to allow the section to take that percent of the circle. if null, size is automatically calculated by
@@ -198,7 +198,7 @@
             " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
                     points[i].after.small.x + " " + points[i].after.small.y + " Z")
           .attr({
-            "strokeWidth": self.options["stroke"],
+            "stroke-width": self.options["stroke-width"],
             "stroke": self.childs[i].options["stroke"],
             "stroke-opacity": self.childs[i].options["stroke-opacity"],
             "fill": self.childs[i].options["fill"],

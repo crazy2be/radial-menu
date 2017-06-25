@@ -1,7 +1,7 @@
 $(function(){
   var mainMenu = new radialMenu({
     fill: 'rgba(0,0,0,0.75)',
-    stroke:0,
+    "stroke-width" :1,
     "font-color": '#FFF',
     "active-fill": '#000',
     "active-font-color": '#fff',
