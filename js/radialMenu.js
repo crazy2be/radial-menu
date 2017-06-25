@@ -224,19 +224,19 @@
 
       for (var i=0; i<childs_length-1; i++) {
         (function (i) {
-          var point1 = points[i].after.point1.x + " " + points[i].after.point1.y,
-            point2 = points[i].after.point2.x + " " + points[i].after.point2.y,
-            point1Next = points[i+1].before.point1.x + " " + points[i+1].before.point1.y,
-            point2Next = points[i+1].before.point2.x + " " + points[i+1].before.point2.y,
-            middlePoint1 = (points[i].after.point1.x+points[i].after.point2.x)/2 + " " + (points[i].after.point1.y+points[i].after.point2.y)/2,
-            middlePoint2 = (points[i+1].before.point1.x+points[i+1].before.point2.x)/2 + " " + (points[i+1].before.point1.y+points[i+1].before.point2.y)/2,
-            this_size = self.childs[i].options.size,
-            rotate_flag = (points[i].after.point1.x === points[i+1].before.point1.x)?true:(points[i].after.point1.y === points[i+1].before.point1.y)?false:undefined;
-
-          self.circles.push(self.g.path("M " + point1 +
-            " A " + ((custom && this_size===0.5)?( rotate_flag?((self.radiusBig-self.options.spacing/2) + " " + self.radiusBig):rotate_flag===false?(self.radiusBig + " " + (self.radiusBig-self.options.spacing/2)):(self.radiusBig + " " + self.radiusBig)):(self.radiusBig + " " + self.radiusBig)) + (custom?((this_size<=0.5)?" 0, 0, 1 ":" 0, 1, 1 "):" 0, 0, 1 ") + point1Next +
-            " L " + point2Next +
-            " A " + ((custom && this_size===0.5)?( rotate_flag?((self.radiusSmall-self.options.spacing/2) + " " + self.radiusSmall):rotate_flag===false?(self.radiusSmall + " " + (self.radiusSmall-self.options.spacing/2)):(self.radiusSmall + " " + self.radiusSmall)):(self.radiusSmall + " " + self.radiusSmall)) + (custom?((this_size<=0.5)?" 0, 0, 0 ":" 0, 1, 0 "):" 0, 0, 0 ") + point2 + " Z")
+          // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
+          // Basically the goal here is to change the diameter of the cicrle drawn when there are
+          // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
+          var rotated = (points[i].after.point1.x === points[i+1].before.point1.x) && !(points[i].after.point1.y === points[i+1].before.point1.y);
+          var adjx = (rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
+          var adjy = (!rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
+          self.circles.push(self.g.path(
+             "M " + points[i].after.point1.x + " " + points[i].after.point1.y +
+            " A " + (self.radiusBig-adjx) + " " + (self.radiusBig-adjy) + " 0, 0, 1 " +
+                    points[i+1].before.point1.x + " " + points[i+1].before.point1.y +
+            " L " + points[i+1].before.point2.x + " " + points[i+1].before.point2.y +
+            " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
+                    points[i].after.point2.x + " " + points[i].after.point2.y + " Z")
           .attr({
             "strokeWidth": self.options["stroke"],
             "stroke": self.childs[i].options["stroke-color"],
@@ -254,13 +254,16 @@
             }
           }));
 
+          var radiusMid = (self.radiusBig + self.radiusSmall) / 2;
+          var middlePoint1 = (points[i].after.point1.x+points[i].after.point2.x)/2 + " " + (points[i].after.point1.y+points[i].after.point2.y)/2;
+          var middlePoint2 = (points[i+1].before.point1.x+points[i+1].before.point2.x)/2 + " " + (points[i+1].before.point1.y+points[i+1].before.point2.y)/2;
           if (points[i].after.point1.x <= points[i+1].before.point1.x) {
             self.texts.push(self.g.text(0, 0, self.childs[i].label).attr({
-              "textpath": "M " + middlePoint1 + " A " + (self.radiusBig+self.radiusSmall)/2 + " " + (self.radiusBig+self.radiusSmall)/2 + (custom?((this_size<=0.5)?" 0, 0, 1 ":" 0, 1, 1 "):" 0, 0, 1 ") + middlePoint2
+              "textpath": "M " + middlePoint1 + " A " + radiusMid + " " + radiusMid + " 0, 0, 1 " + middlePoint2
             }));
           } else {
             self.texts.push(self.g.text(0, 0, self.childs[i].label).attr({
-              "textpath": "M " + middlePoint2 + " A " + (self.radiusBig+self.radiusSmall)/2 + " " + (self.radiusBig+self.radiusSmall)/2 + (custom?((this_size<=0.5)?" 0, 0, 0 ":" 0, 1, 0 "):" 0, 0, 0 ") + middlePoint1
+              "textpath": "M " + middlePoint2 + " A " + radiusMid + " " + radiusMid + " 0, 0, 0 " + middlePoint1
             }));
           }
           self.texts[i].attr({
