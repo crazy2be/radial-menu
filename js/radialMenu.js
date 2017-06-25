@@ -20,9 +20,7 @@
     else return total_size.toFixed(2);
   }
   
-  function deg2rad(deg) {
-      return (deg / 180.) * Math.PI;
-  }
+  var deg2rad = (deg) => (deg / 180.) * Math.PI;
 
   /** circlePoints: step, big radius, small radius, center point x/y, spacing between items */
   function circlePoints(step, r1, r2, cx, cy, spacing) {
@@ -73,11 +71,11 @@
       "font-family": 'Verdana',
       "font-color": '#000000',
       "active-font-color": '#000000',
-      "active-stroke-color": '#000000',
+      "active-stroke": '#000000',
       "active-stroke-opacity": 1.0,
       "active-fill": '#FFFFFF',
       "active-fill-opacity": 1.0,
-      "stroke-color": '#000000',
+      "stroke": '#000000',
       "stroke-opacity": 1.0,
       "fill": '#FFFFFF',
       "fill-opacity": 0.5,
@@ -201,7 +199,7 @@
                     points[i].after.small.x + " " + points[i].after.small.y + " Z")
           .attr({
             "strokeWidth": self.options["stroke"],
-            "stroke": self.childs[i].options["stroke-color"],
+            "stroke": self.childs[i].options["stroke"],
             "stroke-opacity": self.childs[i].options["stroke-opacity"],
             "fill": self.childs[i].options["fill"],
             "fill-opacity": self.childs[i].options["fill-opacity"],
@@ -290,7 +288,7 @@
 
       this.circles.forEach(function (el, index) {
         el.attr({
-          "stroke": self.childs[index].options["stroke-color"],
+          "stroke": self.childs[index].options["stroke"],
           "stroke-opacity": self.childs[index].options["stroke-opacity"],
           "fill": self.childs[index].options["fill"],
           "fill-opacity": self.childs[index].options["fill-opacity"]
@@ -307,7 +305,7 @@
     /** add active styles */
     addActive: function (index) {
       this.circles[index].attr({
-        "stroke": this.childs[index].options["active-stroke-color"],
+        "stroke": this.childs[index].options["active-stroke"],
         "stroke-opacity": this.childs[index].options["active-stroke-opacity"],
         "fill": this.childs[index].options["active-fill"],
         "fill-opacity": this.childs[index].options["active-fill-opacity"]
@@ -320,47 +318,41 @@
 
     /** animating each circle in */
     addAnimationIn: function () {
+      if (!this.childs.length) return;
 
-      if(this.childs.length){
+      var group = this.g;
+      var bbox = group.getBBox();
+      var width = bbox.width;
+      var height = bbox.height;
+      var x = bbox.x;
+      var y = bbox.y;
+      var cx = bbox.cx;
+      var cy = bbox.cy;
+      var cw = parseInt(this.svg.getAttribute('width')) || 0;
+      var ch = parseInt(this.svg.getAttribute('height')) || 0;
 
-        var group = this.g;
-        var bbox = group.getBBox();
-        var width = bbox.width;
-        var height = bbox.height;
-        var x = bbox.x;
-        var y = bbox.y;
-        var cx = bbox.cx;
-        var cy = bbox.cy;
-        var cw = this.svg.getAttribute('width');
-        cw = cw ? parseInt(cw) : 0;
-        var ch = this.svg.getAttribute('height');
-        ch = ch ? parseInt(ch) : 0;
+      if(cw < width && ch < height){
+        this.svg.setAttributeNS (null, "width", width+"px");
+        this.svg.setAttributeNS (null, "data-left", this.svg.style.left);
+        this.svg.style.marginLeft =  (-width / 2)+'px';
 
-        if(cw < width && ch < height){
-          this.svg.setAttributeNS (null, "width", width+"px");
-          this.svg.setAttributeNS (null, "data-left", this.svg.style.left);
-          this.svg.style.marginLeft =  (-width / 2)+'px';
+        this.svg.setAttributeNS (null, "height", height+"px");
+        this.svg.setAttributeNS (null, "data-top", this.svg.style.top);
+        this.svg.style.marginTop =  (-height / 2)+'px';
 
-          this.svg.setAttributeNS (null, "height", height+"px");
-          this.svg.setAttributeNS (null, "data-top", this.svg.style.top);
-          this.svg.style.marginTop =  (-height / 2)+'px';
-
-          this.mainGroup.transform('t'+width/2+','+height/2);
-        }
-
-        this.g
-          .attr({
-            opacity: 0
-          })
-          .transform("r0," + x + ',' + y + "s0.5, 0.5," + cx + "," + cy);
-
-        this.g.animate({
-          transform: "r0," + x + ',' + y + "s1,1," + cx + "," + cy,
-          opacity: 1
-        } , 300, mina.easeout);
-
+        this.mainGroup.transform('t'+width/2+','+height/2);
       }
 
+      this.g
+        .attr({
+          opacity: 0
+        })
+        .transform("r0," + x + ',' + y + "s0.5, 0.5," + cx + "," + cy);
+
+      this.g.animate({
+        transform: "r0," + x + ',' + y + "s1,1," + cx + "," + cy,
+        opacity: 1
+      } , 300, mina.easeout);
     },
 
     /** animating each circle out. Callback - close next level circle */
@@ -373,40 +365,6 @@
       } , 60, mina.easeout, function () {
         self.close();
       });
-    },
-
-    /** return all children of current parent */
-    children: function () {
-      var children_arr = [];
-
-      function childrenRecursion(arr) {
-        arr.forEach(function (el, index) {
-          children_arr.push(el);
-
-          if (el.childs.length) {
-            childrenRecursion(el.childs);
-          }
-        });
-      }
-
-      childrenRecursion(this.childs);
-      return children_arr;
-    },
-
-    /** updating options */
-    update: function (new_options) {
-      this.options = extend(this.options, new_options);
-
-      function updateOptions(arr) {
-        arr.forEach(function (el, index) {
-          el.options = extend(el.options, new_options);
-
-          if (el.childs.length) {
-            updateOptions(el.childs);
-          }
-        });
-      }
-      updateOptions(this.childs);
     },
 
     /** method to add children */
@@ -427,7 +385,6 @@
     this.childs = [];
     this.circles = [];
     this.texts = [];
-    this.defs = [];
 
     // push just created menu item to parents items array
     this.parent.childs.push(this);
