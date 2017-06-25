@@ -110,7 +110,6 @@
 
       // radialMenu SVG elements
       this.s = Snap(this.svg);
-      this.g;
       this.mainGroup = this.s.group();
       this.mainGroup.addClass("radialMenu-holder");
 
@@ -288,14 +287,9 @@
     addAnimationIn: function () {
       if (!this.childs.length) return;
 
-      var group = this.g;
-      var bbox = group.getBBox();
+      var bbox = this.g.node.getBBox();
       var width = bbox.width;
       var height = bbox.height;
-      var x = bbox.x;
-      var y = bbox.y;
-      var cx = bbox.cx;
-      var cy = bbox.cy;
       var cw = parseInt(this.svg.getAttribute('width')) || 0;
       var ch = parseInt(this.svg.getAttribute('height')) || 0;
 
@@ -308,7 +302,7 @@
         this.svg.setAttribute("data-top", this.svg.style.top);
         this.svg.style.marginTop =  (-height / 2)+'px';
 
-        this.mainGroup.transform('t'+width/2+','+height/2);
+        setAttrs(this.mainGroup, {transform: 'translate('+width/2+','+height/2+')'});
       }
     },
 
@@ -338,7 +332,6 @@
     this.svg = this.parent.svg;
     this.s = this.parent.s;
     this.mainGroup = this.parent.mainGroup;
-    this.g;
 
     // action flag
     this.isOpened = false;
