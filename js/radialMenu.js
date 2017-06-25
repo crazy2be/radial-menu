@@ -34,42 +34,34 @@
   /** circlePoints: step, big radius, small radius, center point x/y, spacing between items */
   function circlePoints(step, r1, r2, cx, cy, spacing) {
     var points = [];
-    var circleLengthR1 = 2*Math.PI*r1;
-    var circleLengthR2 = 2*Math.PI*r2;
-    var spacingR1Left = (spacing/2)*360/circleLengthR1;
-    var spacingR1Right = (spacing/2)*360/circleLengthR1;
-    var spacingR2Left = (spacing/2)*360/circleLengthR2;
-    var spacingR2Right = (spacing/2)*360/circleLengthR2;
+    var circleLengthBig   = 2*Math.PI*r1;
+    var circleLengthSmall = 2*Math.PI*r2;
 
     for (var i = 0; i <= 360; i += Number(step.toFixed(1))) {
-      var x1Before = Math.round(cx + r1 * Math.cos(deg2rad(i-spacingR1Left)));
-      var y1Before = Math.round(cy + r1 * Math.sin(deg2rad(i-spacingR1Left)));
-      var x2Before = Math.round(cx + r2 * Math.cos(deg2rad(i-spacingR2Left)));
-      var y2Before = Math.round(cy + r2 * Math.sin(deg2rad(i-spacingR2Left)));
-      var x1After = Math.round(cx + r1 * Math.cos(deg2rad(i+spacingR1Right)));
-      var y1After = Math.round(cy + r1 * Math.sin(deg2rad(i+spacingR1Right)));
-      var x2After = Math.round(cx + r2 * Math.cos(deg2rad(i+spacingR2Right)));
-      var y2After = Math.round(cy + r2 * Math.sin(deg2rad(i+spacingR2Right)));
-
+      var spaceDeg = (spacing/2) * 360;
+      var beforeSmall = deg2rad(i - spaceDeg/circleLengthBig);
+      var beforeBig   = deg2rad(i - spaceDeg/circleLengthSmall);
+      var afterSmall  = deg2rad(i + spaceDeg/circleLengthBig);
+      var afterBig    = deg2rad(i + spaceDeg/circleLengthSmall);
       points.push({
         before: {
-          point1: {
-            x: x1Before,
-            y: y1Before
+          big: {
+            x: Math.round(cx + r1 * Math.cos(beforeSmall)),
+            y: Math.round(cy + r1 * Math.sin(beforeSmall)),
           },
-          point2: {
-            x: x2Before,
-            y: y2Before
+          small: {
+            x: Math.round(cx + r2 * Math.cos(beforeBig)),
+            y: Math.round(cy + r2 * Math.sin(beforeBig)),
           }
         },
         after: {
-          point1: {
-            x: x1After,
-            y: y1After
+          big: {
+            x: Math.round(cx + r1 * Math.cos(afterSmall)),
+            y: Math.round(cy + r1 * Math.sin(afterSmall)),
           },
-          point2: {
-            x: x2After,
-            y: y2After
+          small: {
+            x: Math.round(cx + r2 * Math.cos(afterBig)),
+            y: Math.round(cy + r2 * Math.sin(afterBig)),
           }
         }
       });
@@ -227,16 +219,16 @@
           // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
           // Basically the goal here is to change the diameter of the cicrle drawn when there are
           // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
-          var rotated = (points[i].after.point1.x === points[i+1].before.point1.x) && !(points[i].after.point1.y === points[i+1].before.point1.y);
+          var rotated = (points[i].after.big.x === points[i+1].before.big.x) && !(points[i].after.big.y === points[i+1].before.big.y);
           var adjx = (rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
           var adjy = (!rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
           self.circles.push(self.g.path(
-             "M " + points[i].after.point1.x + " " + points[i].after.point1.y +
+             "M " + points[i].after.big.x + " " + points[i].after.big.y +
             " A " + (self.radiusBig-adjx) + " " + (self.radiusBig-adjy) + " 0, 0, 1 " +
-                    points[i+1].before.point1.x + " " + points[i+1].before.point1.y +
-            " L " + points[i+1].before.point2.x + " " + points[i+1].before.point2.y +
+                    points[i+1].before.big.x + " " + points[i+1].before.big.y +
+            " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
             " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
-                    points[i].after.point2.x + " " + points[i].after.point2.y + " Z")
+                    points[i].after.small.x + " " + points[i].after.small.y + " Z")
           .attr({
             "strokeWidth": self.options["stroke"],
             "stroke": self.childs[i].options["stroke-color"],
@@ -255,9 +247,9 @@
           }));
 
           var radiusMid = (self.radiusBig + self.radiusSmall) / 2;
-          var middlePoint1 = (points[i].after.point1.x+points[i].after.point2.x)/2 + " " + (points[i].after.point1.y+points[i].after.point2.y)/2;
-          var middlePoint2 = (points[i+1].before.point1.x+points[i+1].before.point2.x)/2 + " " + (points[i+1].before.point1.y+points[i+1].before.point2.y)/2;
-          if (points[i].after.point1.x <= points[i+1].before.point1.x) {
+          var middlePoint1 = (points[i].after.big.x+points[i].after.small.x)/2 + " " + (points[i].after.big.y+points[i].after.small.y)/2;
+          var middlePoint2 = (points[i+1].before.big.x+points[i+1].before.small.x)/2 + " " + (points[i+1].before.big.y+points[i+1].before.small.y)/2;
+          if (points[i].after.big.x <= points[i+1].before.big.x) {
             self.texts.push(self.g.text(0, 0, self.childs[i].label).attr({
               "textpath": "M " + middlePoint1 + " A " + radiusMid + " " + radiusMid + " 0, 0, 1 " + middlePoint2
             }));
