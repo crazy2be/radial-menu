@@ -215,17 +215,14 @@
           }));
 
           var radiusMid = (self.radiusBig + self.radiusSmall) / 2;
-          var middlePoint1 = (points[i].after.big.x+points[i].after.small.x)/2 + " " + (points[i].after.big.y+points[i].after.small.y)/2;
-          var middlePoint2 = (points[i+1].before.big.x+points[i+1].before.small.x)/2 + " " + (points[i+1].before.big.y+points[i+1].before.small.y)/2;
-          if (points[i].after.big.x <= points[i+1].before.big.x) {
-            self.texts.push(self.g.text(0, 0, self.childs[i].label).attr({
-              "textpath": "M " + middlePoint1 + " A " + radiusMid + " " + radiusMid + " 0, 0, 1 " + middlePoint2
-            }));
-          } else {
-            self.texts.push(self.g.text(0, 0, self.childs[i].label).attr({
-              "textpath": "M " + middlePoint2 + " A " + radiusMid + " " + radiusMid + " 0, 0, 0 " + middlePoint1
-            }));
-          }
+          var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
+          var afterMid = mid(points[i].after);
+          var beforeMid = mid(points[i+1].before);
+          var sweep = ~~(points[i].after.big.x <= points[i+1].before.big.x);
+          if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
+          self.texts.push(self.g.text(0, 0, self.childs[i].label).attr({
+            "textpath": "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid
+          }));
           self.texts[i].attr({
             "fill": self.childs[i].options["font-color"],
             "font-family": self.childs[i].options["font-family"],
