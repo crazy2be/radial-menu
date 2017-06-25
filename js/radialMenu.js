@@ -26,17 +26,6 @@
     if ((total_size > 1) || (total_size === 0)) return false;
     else return total_size.toFixed(2);
   }
-
-  /** building custom steps array */
-  function buildStepsArr(arr, number) {
-    if (number !== 1) {
-      var no_size = arr.filter(el => !el.options.size);
-      for (var i = 0; i < no_size.length; i++) {
-          no_size[i].options.size = (1-number)/no_size.length;
-      }
-    }
-    return arr.map(el => 360*el.options.size);
-  }
   
   function deg2rad(deg) {
       return (deg / 180.) * Math.PI;
@@ -44,33 +33,25 @@
 
   /** circlePoints: step, big radius, small radius, center point x/y, spacing between items */
   function circlePoints(children, step, r1, r2, cx, cy, spacing) {
-    var points = [],
-      x1Before,y1Before,x2Before,y2Before,x1After,y1After,x2After,y2After,
-      flag = 0,
-      circleLengthR1 = 2*Math.PI*r1,
-      circleLengthR2 = 2*Math.PI*r2,
-      spacingR1Left = (spacing/2)*360/circleLengthR1,
-      spacingR1Right = (spacing/2)*360/circleLengthR1,
-      spacingR2Left = (spacing/2)*360/circleLengthR2,
-      spacingR2Right = (spacing/2)*360/circleLengthR2,
-      custom = checkSize(children),
-      steps = [];
+    var points = [];
+    var circleLengthR1 = 2*Math.PI*r1;
+    var circleLengthR2 = 2*Math.PI*r2;
+    var spacingR1Left = (spacing/2)*360/circleLengthR1;
+    var spacingR1Right = (spacing/2)*360/circleLengthR1;
+    var spacingR2Left = (spacing/2)*360/circleLengthR2;
+    var spacingR2Right = (spacing/2)*360/circleLengthR2;
 
-    if (custom) {
-      steps = buildStepsArr(children, custom);
-    }
+    for (var i = 0; i <= 360; i += Number(step.toFixed(1))) {
+      var x1Before = Math.round(cx + r1 * Math.cos(deg2rad(i-spacingR1Left)));
+      var y1Before = Math.round(cy + r1 * Math.sin(deg2rad(i-spacingR1Left)));
+      var x2Before = Math.round(cx + r2 * Math.cos(deg2rad(i-spacingR2Left)));
+      var y2Before = Math.round(cy + r2 * Math.sin(deg2rad(i-spacingR2Left)));
+      var x1After = Math.round(cx + r1 * Math.cos(deg2rad(i+spacingR1Right)));
+      var y1After = Math.round(cy + r1 * Math.sin(deg2rad(i+spacingR1Right)));
+      var x2After = Math.round(cx + r2 * Math.cos(deg2rad(i+spacingR2Right)));
+      var y2After = Math.round(cy + r2 * Math.sin(deg2rad(i+spacingR2Right)));
 
-    for (var i=0, j=0; i<=360; i=custom?i+steps[j]:i+Number(step.toFixed(1)), j++) {
-      x1Before = Math.round(cx + r1 * Math.cos(deg2rad(i-spacingR1Left))),
-      y1Before = Math.round(cy + r1 * Math.sin(deg2rad(i-spacingR1Left))),
-      x2Before = Math.round(cx + r2 * Math.cos(deg2rad(i-spacingR2Left))),
-      y2Before = Math.round(cy + r2 * Math.sin(deg2rad(i-spacingR2Left))),
-      x1After = Math.round(cx + r1 * Math.cos(deg2rad(i+spacingR1Right))),
-      y1After = Math.round(cy + r1 * Math.sin(deg2rad(i+spacingR1Right))),
-      x2After = Math.round(cx + r2 * Math.cos(deg2rad(i+spacingR2Right))),
-      y2After = Math.round(cy + r2 * Math.sin(deg2rad(i+spacingR2Right)));
-
-      points[flag] = {
+      points.push({
         before: {
           point1: {
             x: x1Before,
@@ -91,9 +72,7 @@
             y: y2After
           }
         }
-      }
-
-      flag++;
+      });
     }
     return points;
   };
