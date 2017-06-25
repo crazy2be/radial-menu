@@ -1,20 +1,13 @@
+// kate: indent-width: 2;
 ;(function (window) {
   "use strict";
 
   /** creating optins object */
   function extend(a, b) {
-    var key,
-    c = {};
-    for (key in a) {
-      if (b) {
-        if (b.hasOwnProperty(key)) {
-          c[key] = b[key];
-        } else {
-          c[key] = a[key];
-        }
-      } else {
-        c[key] = a[key];
-      }
+    var c = {};
+    for (var key in a) {
+      if (b && b.hasOwnProperty(key)) c[key] = b[key];
+      else c[key] = a[key];
     }
     return c;
   };
@@ -68,15 +61,6 @@
     }
     return points;
   };
-
-  /** get index of the current object from arrays */
-  function getIndex(search_item, array) {
-    for (var i=0; i<array.length; i++) {
-      if (array[i] === search_item) {
-        return i;
-      }
-    }
-  }
 
   /** radialMenu constructor */
   var radialMenu = function (options) {
@@ -135,7 +119,6 @@
       this.childs = [];
       this.circles = [];
       this.texts = [];
-      this.defs = [];
 
       // if opened
       this.isOpened = false;
@@ -164,26 +147,18 @@
 
     /** open method for each object */
     open: function () {
+      if (this.isOpened) return;
+
       var self = this;
-
-      if (!this.isOpened) {
-        if (!this.parent) {
-          this.buildSvg();
-          this.buildChildren();
-        } else {
-          this.parent.childs.forEach(function (el) {
-            if (el.isOpened){
-              el.closeChildren();
-            }
-          });
-          if (!this.parent.isOpened) {
-            this.parent.open();
-          }
-
-          this.buildChildren();
-          this.parent.removeActive();
-          this.parent.addActive(getIndex(this, this.parent.childs));
-        }
+      if (!this.parent) {
+        this.buildSvg();
+        this.buildChildren();
+      } else {
+        this.parent.closeAllChildren();
+        this.parent.open();
+        this.buildChildren();
+        this.parent.removeActive();
+        this.parent.addActive(this.parent.childs.indexOf(this));
       }
     },
 
@@ -197,9 +172,9 @@
 
     /** all drawing magic is here */
     buildChildren: function () {
-      var step = 360/this.childs.length;
       var self = this;
 
+      var step = 360/this.childs.length;
       // add flag means menu is opened
       this.isOpened = true;
       // Calculating radiuses before children builds
@@ -272,25 +247,20 @@
 
     /** close current item */
     closeChildren: function () {
-      if (this.g) {
-        this.addAnimationOut();
-      }
+      if (!this.isOpened) return;
+      if (this.g) this.addAnimationOut();
     },
 
     /** close childs of every item */
     closeAllChildren: function () {
-      this.childs.forEach(function (el) {
-        el.closeChildren();
-      });
+      this.childs.forEach(el => el.closeChildren());
     },
 
     /** closing each circle */
     close: function () {
-      var self = this,
-        length;
-
+      var self = this;
       if (!this.parent) {
-        length = this.mainGroup.selectAll("g").length;
+        var length = this.mainGroup.selectAll("g").length;
         setTimeout(function () {
           self.clearWholeMenu();
         }, length*60);
@@ -300,7 +270,6 @@
         this.g.remove();
         this.circles = [];
         this.texts = [];
-        this.defs = [];
         this.isOpened = false;
         this.closeAllChildren();
       }
@@ -311,7 +280,6 @@
       this.g.remove();
       this.circles = [];
       this.texts = [];
-      this.defs = [];
       this.isOpened = false;
       this.s.remove();
     },
