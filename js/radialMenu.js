@@ -114,8 +114,8 @@
         var spaceSmall = spaceDeg / circ(this.radiusSmall);
         setAttrs(circle, merge({
           d: [].concat(
-            "M", describeArc(0, 0, this.radiusBig, i*step + spaceBig, (i+1)*step - spaceBig, false),
-            "L", describeArc(0, 0, this.radiusSmall, (i+1)*step - spaceSmall, i*step + spaceSmall, true),
+            "M", describeArc(this.radiusBig, i*step + spaceBig, (i+1)*step - spaceBig, false),
+            "L", describeArc(this.radiusSmall, (i+1)*step - spaceSmall, i*step + spaceSmall, true),
             "Z").join(" "),
           "cursor": "pointer"
         }));
@@ -142,7 +142,7 @@
         if (sweep) [start, end] = [end, start];
         var textPath = document.createElementNS(xmlns, "textPath");
         setAttrs(textPath, {
-          "href": "#" + defsPath(this.svg, ["M"].concat(describeArc(0, 0, radiusMid, start, end, sweep)).join(" ")),
+          "href": "#" + defsPath(this.svg, ["M"].concat(describeArc(radiusMid, start, end, sweep)).join(" ")),
           "startOffset": "50%",
           "alignment-baseline": "middle",
         });
