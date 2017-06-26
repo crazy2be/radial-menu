@@ -39,7 +39,7 @@
   function describeArc(radius, startAngle, endAngle, sweep) {
     var start = polarToCartesian(radius, endAngle);
     var end = polarToCartesian(radius, startAngle);
-    var largeArcFlag = (endAngle - startAngle) > 180;
+    var largeArcFlag = Math.abs(endAngle - startAngle) > 180;
     return [
       start.x, start.y,
       "A", radius, radius, 0, ~~largeArcFlag, ~~sweep, end.x, end.y];
@@ -51,6 +51,7 @@
       "start-radius": 50,
       "onclick": null,
       "class": "",
+      "size": 1,
     };
     this.options = merge(defaults, options);
     this.init();
@@ -94,6 +95,14 @@
       this.radiusBig = this.radiusSmall + 50;
       this.g = createElem(this.mainGroup, "g");
 
+      var sum = a => a.reduce((n, i) => n + i, 0);
+      var totalSize = sum(this.childs.map(c => c.options.size));
+      var steps = [0], deg = 0;
+      for (var i = 0; i < this.childs.length; i++) {
+        deg += this.childs[i].options.size * (360 / totalSize);
+        steps.push(deg);
+      }
+
       for (let i = 0; i < this.childs.length; i++) {
         let opts = this.childs[i].options;
         var item = createElem(this.g, "g")
@@ -102,14 +111,13 @@
 
         // ### Background
         var circ = r => 2*Math.PI*r;
-        var step = 360 / this.childs.length;
         var spaceDeg = (this.options.spacing/2) * 360;
         var spaceBig = spaceDeg / circ(this.radiusBig);
         var spaceSmall = spaceDeg / circ(this.radiusSmall);
         var background = createElem(item, "path", {
           d: [].concat(
-            "M", describeArc(this.radiusBig, i*step + spaceBig, (i+1)*step - spaceBig, false),
-            "L", describeArc(this.radiusSmall, (i+1)*step - spaceSmall, i*step + spaceSmall, true),
+            "M", describeArc(this.radiusBig, steps[i] + spaceBig, steps[i+1] - spaceBig, false),
+            "L", describeArc(this.radiusSmall, steps[i+1] - spaceSmall, steps[i] + spaceSmall, true),
             "Z").join(" "),
           "cursor": "pointer"
         })
@@ -126,7 +134,7 @@
         });
 
         var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
-        var start = i*step, end = (i+1)*step, sweep = end > 180;
+        var start = steps[i], end = steps[i+1], sweep = end > 180;
         if (sweep) [start, end] = [end, start];
         var textPath = createElem(text, "textPath", {
           "href": "#" + defsPath(this.svg, ["M"].concat(describeArc(radiusMid, start, end, sweep)).join(" ")),
