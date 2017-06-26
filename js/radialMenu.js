@@ -31,6 +31,7 @@
     var points = [];
     var circleLengthBig   = 2*Math.PI*rBig;
     var circleLengthSmall = 2*Math.PI*rSmall;
+    var cos = Math.cos, sin = Math.sin;
 
     for (var i = 0; i <= 360; i += Number(step.toFixed(1))) {
       var spaceDeg = (spacing/2) * 360;
@@ -40,24 +41,12 @@
       var afterBig    = deg2rad(i + spaceDeg/circleLengthSmall);
       points.push({
         before: {
-          big: {
-            x: Math.round(rBig * Math.cos(beforeSmall)),
-            y: Math.round(rBig * Math.sin(beforeSmall)),
-          },
-          small: {
-            x: Math.round(rSmall * Math.cos(beforeBig)),
-            y: Math.round(rSmall * Math.sin(beforeBig)),
-          }
+          big:   {x: ~~(rBig * cos(beforeSmall)), y: ~~(rBig * sin(beforeSmall))},
+          small: {x: ~~(rSmall * cos(beforeBig)), y: ~~(rSmall * sin(beforeBig))}
         },
         after: {
-          big: {
-            x: Math.round(rBig * Math.cos(afterSmall)),
-            y: Math.round(rBig * Math.sin(afterSmall)),
-          },
-          small: {
-            x: Math.round(rSmall * Math.cos(afterBig)),
-            y: Math.round(rSmall * Math.sin(afterBig)),
-          }
+          big:   { x: ~~(rBig * cos(afterSmall)), y: ~~(rBig * sin(afterSmall))},
+          small: { x: ~~(rSmall * cos(afterBig)), y: ~~(rSmall * sin(afterBig))}
         }
       });
     }
