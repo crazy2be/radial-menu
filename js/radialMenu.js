@@ -54,6 +54,7 @@
       "background-style": "",
       "size": 1,
       "insert-at": document.body,
+      "deg-start": 90,
     };
     this.options = merge(defaults, options);
     this.init();
@@ -96,7 +97,7 @@
 
       var sum = a => a.reduce((n, i) => n + i, 0);
       var totalSize = sum(this.childs.map(c => c.options.size));
-      var steps = [0], deg = 0;
+      var deg = this.options['deg-start'], steps = [deg];
       for (var i = 0; i < this.childs.length; i++) {
         deg += this.childs[i].options.size * (360 / totalSize);
         steps.push(deg);
