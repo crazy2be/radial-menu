@@ -120,23 +120,45 @@
         if (opts.class) item.classList.add(opts.class);
         this.g.appendChild(item);
         this.items.push(item);
+
+        function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+          var angleInRadians = angleInDegrees * Math.PI / 180.0;
+
+          return {
+            x: centerX + (radius * Math.cos(angleInRadians)),
+            y: centerY + (radius * Math.sin(angleInRadians))
+          };
+        }
+
+        function describeArc(x, y, radius, startAngle, endAngle, sweep){
+          var start = polarToCartesian(x, y, radius, endAngle);
+          var end = polarToCartesian(x, y, radius, startAngle);
+          var largeArcFlag = (endAngle - startAngle > 180);
+          return [
+            start.x, start.y,
+            "A", radius, radius, 0, ~~largeArcFlag, ~~sweep, end.x, end.y];
+        }
         // ### Circle
         // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
         // Basically the goal here is to change the diameter of the cicrle drawn when there are
         // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
         var p1 = points[i], p2 = points[i + 1];
-        var rotated = (p1.after.big.x === p2.before.big.x) && !(p1.after.big.y === p2.before.big.y);
-        var adjx = rotated ? this.options.spacing / 2 : 0.;
-        var adjy = !rotated ? this.options.spacing / 2 : 0.;
+        //var rotated = (p1.after.big.x === p2.before.big.x) && !(p1.after.big.y === p2.before.big.y);
+        //var adjx = 0;//rotated ? this.options.spacing / 2 : 0.;
+        //var adjy = 0;//!rotated ? this.options.spacing / 2 : 0.;
         var circle = document.createElementNS(xmlns, "path");
+        var aaaa = 360 / this.childs.length;
         setAttrs(circle, merge({
-          d: "M " + p1.after.big.x + " " + p1.after.big.y +
-            " A " + (this.radiusBig-adjx) + " " + (this.radiusBig-adjy) + " 0, 0, 1 " +
-                    p2.before.big.x + " " + p2.before.big.y +
-            " L " + p2.before.small.x + " " + p2.before.small.y +
-            " A " + (this.radiusSmall-adjx) + " " + (this.radiusSmall-adjy) + " 0, 0, 0 " +
-                    p1.after.small.x + " " + p1.after.small.y + " Z",
-          "stroke-width": this.options["stroke-width"],
+          d: [].concat(
+            "M", describeArc(0, 0, this.radiusBig, i*aaaa, (i+1)*aaaa, false),
+            "L", describeArc(0, 0, this.radiusSmall, (i+1)*aaaa, i*aaaa, true),
+                       "Z").join(" "),
+          //d: "M " + p1.after.big.x + " " + p1.after.big.y +
+          //  " A " + (this.radiusBig-adjx) + " " + (this.radiusBig-adjy) + " 0, 0, 1 " +
+          //          p2.before.big.x + " " + p2.before.big.y +
+          //  " L " + p2.before.small.x + " " + p2.before.small.y +
+          //  " A " + (this.radiusSmall-adjx) + " " + (this.radiusSmall-adjy) + " 0, 0, 0 " +
+          //          p1.after.small.x + " " + p1.after.small.y + " Z",
           "cursor": "pointer"
         }));
         circle.onclick = () => {
