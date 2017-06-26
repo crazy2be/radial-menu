@@ -27,11 +27,10 @@
   var deg2rad = (deg) => (deg / 180.) * Math.PI;
   var xmlns = "http://www.w3.org/2000/svg";
 
-  /** circlePoints: step, big radius, small radius, center point x/y, spacing between items */
-  function circlePoints(step, r1, r2, cx, cy, spacing) {
+  function circlePoints(step, rBig, rSmall, spacing) {
     var points = [];
-    var circleLengthBig   = 2*Math.PI*r1;
-    var circleLengthSmall = 2*Math.PI*r2;
+    var circleLengthBig   = 2*Math.PI*rBig;
+    var circleLengthSmall = 2*Math.PI*rSmall;
 
     for (var i = 0; i <= 360; i += Number(step.toFixed(1))) {
       var spaceDeg = (spacing/2) * 360;
@@ -42,22 +41,22 @@
       points.push({
         before: {
           big: {
-            x: Math.round(cx + r1 * Math.cos(beforeSmall)),
-            y: Math.round(cy + r1 * Math.sin(beforeSmall)),
+            x: Math.round(rBig * Math.cos(beforeSmall)),
+            y: Math.round(rBig * Math.sin(beforeSmall)),
           },
           small: {
-            x: Math.round(cx + r2 * Math.cos(beforeBig)),
-            y: Math.round(cy + r2 * Math.sin(beforeBig)),
+            x: Math.round(rSmall * Math.cos(beforeBig)),
+            y: Math.round(rSmall * Math.sin(beforeBig)),
           }
         },
         after: {
           big: {
-            x: Math.round(cx + r1 * Math.cos(afterSmall)),
-            y: Math.round(cy + r1 * Math.sin(afterSmall)),
+            x: Math.round(rBig * Math.cos(afterSmall)),
+            y: Math.round(rBig * Math.sin(afterSmall)),
           },
           small: {
-            x: Math.round(cx + r2 * Math.cos(afterBig)),
-            y: Math.round(cy + r2 * Math.sin(afterBig)),
+            x: Math.round(rSmall * Math.cos(afterBig)),
+            y: Math.round(rSmall * Math.sin(afterBig)),
           }
         }
       });
@@ -128,7 +127,7 @@
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.radiusSmall;
       this.radiusBig = this.radiusSmall + 50;
 
-      var points = circlePoints(step, this.radiusBig, this.radiusSmall, 0, 0, this.options.spacing);
+      var points = circlePoints(step, this.radiusBig, this.radiusSmall, this.options.spacing);
       this.g = document.createElementNS(xmlns, "g");
       this.mainGroup.appendChild(this.g);
 
