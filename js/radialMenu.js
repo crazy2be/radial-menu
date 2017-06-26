@@ -66,13 +66,12 @@
 
   /** radialMenu constructor */
   var radialMenu = function (options) {
-    this.defaults = {
+    var defaults = {
       "spacing": 10, // amount of space between menu items
       "start-radius": 50,
       "onclick": null, //callback, none by default
     };
-    this.options = merge(this.defaults, options);
-    this.parentOptions = this.options;
+    this.options = merge(defaults, options);
     this.init();
   };
 
@@ -261,31 +260,26 @@
 
     /** method to add children */
     add: function (label, options) {
-      return new myMenuItem(label, options, this, this.parentOptions);
+      var child = new myMenuItem(label, merge(this.options, options), this);
+      this.childs.push(child);
+      return child;
     }
   };
 
   /** myMenuItem constructor */
-  var myMenuItem = function (label, options, parent, parentOptions) {
-    this.parent = parent;
-    this.defaults = this.parent.defaults;
-    this.parentOptions = parentOptions;
-    this.options = merge(this.parentOptions, options);
+  var myMenuItem = function (label, options, parent) {
     this.label = label;
+    this.options = options;
+    this.parent = parent;
 
     // empty arrays too keep radial item objects
     this.childs = [];
     this.items = [];
 
-    // push just created menu item to parents items array
-    this.parent.childs.push(this);
-
     // menuItem SVG elements
     this.svg = this.parent.svg;
-    this.s = this.parent.s;
     this.mainGroup = this.parent.mainGroup;
 
-    // action flag
     this.isOpened = false;
   };
 
