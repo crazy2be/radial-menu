@@ -106,10 +106,10 @@
 
     /** all drawing magic is here */
     buildChildren: function () {
-      var step = 360 / this.childs.length;
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.options["start-radius"];
       this.radiusBig = this.radiusSmall + 50;
 
+      var step = 360 / this.childs.length;
       var points = circlePoints(step, this.radiusBig, this.radiusSmall, this.options.spacing);
       this.g = document.createElementNS(xmlns, "g");
       this.mainGroup.appendChild(this.g);
@@ -148,10 +148,24 @@
         //var adjy = 0;//!rotated ? this.options.spacing / 2 : 0.;
         var circle = document.createElementNS(xmlns, "path");
         var aaaa = 360 / this.childs.length;
+        var circ = r => 2*Math.PI*r;
+
+        var circleLengthBig   = 2*Math.PI*this.radiusBig;
+        var circleLengthSmall = 2*Math.PI*this.radiusSmall;
+//         var cos = Math.cos, sin = Math.sin;
+//         var deg2rad = (deg) => (deg / 180.) * Math.PI;
+        var step = 360 / this.childs.length;
+
+//     for (var i = 0; i <= 360; i += Number(step.toFixed(1))) {
+      var spaceDeg = (this.options.spacing/2) * 360;
+//       var beforeSmall = deg2rad(i - spaceDeg/circleLengthBig);
+//       var beforeBig   = deg2rad(i - spaceDeg/circleLengthSmall);
+//       var afterSmall  = deg2rad(i + spaceDeg/circleLengthBig);
+//       var afterBig    = deg2rad(i + spaceDeg/circleLengthSmall);
         setAttrs(circle, merge({
           d: [].concat(
-            "M", describeArc(0, 0, this.radiusBig, i*aaaa, (i+1)*aaaa, false),
-            "L", describeArc(0, 0, this.radiusSmall, (i+1)*aaaa, i*aaaa, true),
+            "M", describeArc(0, 0, this.radiusBig, i*step + spaceDeg/circleLengthBig, (i+1)*step - spaceDeg/circleLengthBig, false),
+            "L", describeArc(0, 0, this.radiusSmall, (i+1)*step - spaceDeg/circleLengthSmall, i*step + spaceDeg/circleLengthSmall, true),
                        "Z").join(" "),
           //d: "M " + p1.after.big.x + " " + p1.after.big.y +
           //  " A " + (this.radiusBig-adjx) + " " + (this.radiusBig-adjy) + " 0, 0, 1 " +
