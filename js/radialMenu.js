@@ -202,31 +202,20 @@
         this.isOpened = false;
         this.closeAllChildren();
       }
-
-      if (!this.parent) {
-        this.s.remove();
-      }
     },
 
     recomputeBounds: function () {
       if (!this.childs.length) return;
 
-      var bbox = this.g.getBBox();
-      var width = bbox.width, height = bbox.height;
+      var bbox = this.g.getBBox(), w = bbox.width, h = bbox.height;
       var cw = parseInt(this.svg.getAttribute('width')) || 0;
       var ch = parseInt(this.svg.getAttribute('height')) || 0;
+      if (cw >= w && ch >= h) return;
 
-      if(cw < width && ch < height){
-        this.svg.setAttribute("width", width+"px");
-        this.svg.setAttribute("data-left", this.svg.style.left);
-        this.svg.style.marginLeft =  (-width / 2)+'px';
-
-        this.svg.setAttribute("height", height+"px");
-        this.svg.setAttribute("data-top", this.svg.style.top);
-        this.svg.style.marginTop =  (-height / 2)+'px';
-
-        setAttrs(this.mainGroup, {transform: 'translate('+width/2+','+height/2+')'});
-      }
+      setAttrs(this.svg, {width: w+"px", height: h+"px"});
+      this.svg.style.marginLeft = (-w/2)+'px';
+      this.svg.style.marginTop = (-h/2)+'px';
+      setAttrs(this.mainGroup, {transform: 'translate('+w/2+','+h/2+')'});
     },
 
     /** method to add children */
