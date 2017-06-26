@@ -210,10 +210,43 @@
           var beforeMid = mid(points[i+1].before);
           var sweep = ~~(points[i].after.big.x <= points[i+1].before.big.x);
           if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
-          self.texts.push(self.g.text(0, 0, self.childs[i].label).attr({
-            "textpath": "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid,
-          }));
-          setAttrs(self.texts[i], {
+
+          var defsp = self.g.node.ownerSVGElement;
+          var defs = defsp.querySelector("defs");
+          if (!defs) {
+            defs = document.createElementNS(xmlns, "defs");
+            defsp.appendChild(defs);
+          }
+          // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+          function makeid() {
+              var text = "";
+              var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+              for (var i = 0; i < 20; i++) {
+                  text += possible.charAt(Math.floor(Math.random() * possible.length));
+              }
+              return text;
+          }
+          var pathID = makeid();
+          var path = document.createElementNS(xmlns, "path");
+          setAttrs(path, {
+            d: "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid,
+            id: pathID,
+          });
+          defs.appendChild(path);
+
+
+          var text = document.createElementNS(xmlns, "text");
+          self.g.node.appendChild(text);
+          self.texts.push(text);
+
+          var textPath = document.createElementNS(xmlns, "textPath");
+          setAttrs(textPath, {"href": "#" + pathID});
+          text.appendChild(textPath);
+
+          var textNode = document.createTextNode(self.childs[i].label);
+          textPath.appendChild(textNode);
+
+          setAttrs(text, {
             "fill": self.childs[i].options["font-color"],
             "font-family": self.childs[i].options["font-family"],
             "font-size": self.childs[i].options["font-size"],
@@ -221,7 +254,7 @@
             "pointer-events": "none",
             "alignment-baseline": "baseline"
           });
-          setAttrs(self.texts[i].textPath, {
+          setAttrs(textPath, {
             "startOffset": "50%",
             "alignment-baseline": "middle"
           });
