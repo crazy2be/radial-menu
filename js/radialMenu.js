@@ -69,7 +69,8 @@
     var defaults = {
       "spacing": 10, // amount of space between menu items
       "start-radius": 50,
-      "onclick": null, //callback, none by default
+      "onclick": null,
+      "class": "",
     };
     this.options = merge(defaults, options);
     this.init();
@@ -90,10 +91,6 @@
         this.mainGroup = document.createElementNS(xmlns, "g");
         this.svg.appendChild(this.mainGroup);
       }
-    },
-
-    get: function () {
-      return this.mainGroup;
     },
 
     open: function () {
@@ -129,7 +126,12 @@
       this.mainGroup.appendChild(this.g);
 
       for (let i = 0; i < points.length - 1; i++) {
+        let child = this.childs[i];
         var item = document.createElementNS(xmlns, "g");
+        if (child.options.class) {
+          item.classList.add(child.options.class);
+          console.log("found class", item);
+        }
         this.g.appendChild(item);
         this.items.push(item);
         // ### Circle
@@ -138,8 +140,8 @@
         // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
         var p1 = points[i], p2 = points[i + 1];
         var rotated = (p1.after.big.x === p2.before.big.x) && !(p1.after.big.y === p2.before.big.y);
-        var adjx = (rotated && this.childs[i].options.size == 0.5) ? this.options.spacing / 2 : 0.;
-        var adjy = (!rotated && this.childs[i].options.size == 0.5) ? this.options.spacing / 2 : 0.;
+        var adjx = (rotated && child.options.size == 0.5) ? this.options.spacing / 2 : 0.;
+        var adjy = (!rotated && child.options.size == 0.5) ? this.options.spacing / 2 : 0.;
         var circle = document.createElementNS(xmlns, "path");
         item.appendChild(circle);
         setAttrs(circle, merge({
@@ -153,10 +155,10 @@
           "cursor": "pointer"
         }));
         circle.onclick = () => {
-          if (this.childs[i].options.onclick) {
-            this.childs[i].options.onclick();
+          if (child.options.onclick) {
+            child.options.onclick();
           }
-          this.childs[i].open(i);
+          child.open(i);
         }
 
         // ### Text Path
@@ -198,7 +200,7 @@
         });
         text.appendChild(textPath);
 
-        var textNode = document.createTextNode(this.childs[i].label);
+        var textNode = document.createTextNode(child.label);
         textPath.appendChild(textNode);
       }
       this.recomputeBounds();

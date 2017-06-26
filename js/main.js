@@ -6,7 +6,7 @@ $(function(){
   var child1 = mainMenu.add('\uf040'+" CHILD 1");
   var child2 = mainMenu.add("CHILD 2");
   var child3 = mainMenu.add("CHILD 3",{
-    size:0.5
+      "class": "blue",
   });
 
   // SECOND LEVEL ITEMS
