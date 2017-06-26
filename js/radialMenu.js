@@ -92,12 +92,10 @@
       }
     },
 
-    /** get menu holder */
     get: function () {
       return this.mainGroup;
     },
 
-    /** open method for each object */
     open: function () {
       if (this.isOpened) return;
 
@@ -114,7 +112,6 @@
       }
     },
 
-    /** creating SVG element and paste it to body */
     insertSvg: function () {
       var body = document.querySelector("body");
       body.insertBefore(this.svg, body.firstChild);
@@ -139,18 +136,19 @@
         // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
         // Basically the goal here is to change the diameter of the cicrle drawn when there are
         // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
-        var rotated = (points[i].after.big.x === points[i+1].before.big.x) && !(points[i].after.big.y === points[i+1].before.big.y);
+        var p1 = points[i], p2 = points[i + 1];
+        var rotated = (p1.after.big.x === p2.before.big.x) && !(p1.after.big.y === p2.before.big.y);
         var adjx = (rotated && this.childs[i].options.size == 0.5) ? this.options.spacing / 2 : 0.;
         var adjy = (!rotated && this.childs[i].options.size == 0.5) ? this.options.spacing / 2 : 0.;
         var circle = document.createElementNS(xmlns, "path");
         item.appendChild(circle);
         setAttrs(circle, merge({
-          d: "M " + points[i].after.big.x + " " + points[i].after.big.y +
+          d: "M " + p1.after.big.x + " " + p1.after.big.y +
             " A " + (this.radiusBig-adjx) + " " + (this.radiusBig-adjy) + " 0, 0, 1 " +
-                    points[i+1].before.big.x + " " + points[i+1].before.big.y +
-            " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
+                    p2.before.big.x + " " + p2.before.big.y +
+            " L " + p2.before.small.x + " " + p2.before.small.y +
             " A " + (this.radiusSmall-adjx) + " " + (this.radiusSmall-adjy) + " 0, 0, 0 " +
-                    points[i].after.small.x + " " + points[i].after.small.y + " Z",
+                    p1.after.small.x + " " + p1.after.small.y + " Z",
           "stroke-width": this.options["stroke-width"],
           "cursor": "pointer"
         }));
@@ -164,9 +162,9 @@
         // ### Text Path
         var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
         var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
-        var afterMid = mid(points[i].after);
-        var beforeMid = mid(points[i+1].before);
-        var sweep = ~~(points[i].after.big.x <= points[i+1].before.big.x);
+        var afterMid = mid(p1.after);
+        var beforeMid = mid(p2.before);
+        var sweep = ~~(p1.after.big.x <= p2.before.big.x);
         if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
 
         var defsp = this.g.ownerSVGElement;
@@ -206,12 +204,8 @@
       this.recomputeBounds();
     },
 
-    /** close childs of every item */
-    closeAllChildren: function () {
-      this.childs.forEach(el => el.close());
-    },
+    closeAllChildren: function () { this.childs.forEach(el => el.close()); },
 
-    /** closing each circle */
     close: function () {
       if (!this.isOpened) return;
 
