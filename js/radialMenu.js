@@ -116,7 +116,7 @@
 
     /** all drawing magic is here */
     buildChildren: function () {
-      var step = 360/this.childs.length;
+      var step = 360 / this.childs.length;
       this.isOpened = true;
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.options["start-radius"];
       this.radiusBig = this.radiusSmall + 50;
@@ -126,12 +126,9 @@
       this.mainGroup.appendChild(this.g);
 
       for (let i = 0; i < points.length - 1; i++) {
-        let child = this.childs[i];
+        let child = this.childs[i], opts = child.options;
         var item = document.createElementNS(xmlns, "g");
-        if (child.options.class) {
-          item.classList.add(child.options.class);
-          console.log("found class", item);
-        }
+        if (opts.class) item.classList.add(opts.class);
         this.g.appendChild(item);
         this.items.push(item);
         // ### Circle
@@ -140,8 +137,8 @@
         // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
         var p1 = points[i], p2 = points[i + 1];
         var rotated = (p1.after.big.x === p2.before.big.x) && !(p1.after.big.y === p2.before.big.y);
-        var adjx = (rotated && child.options.size == 0.5) ? this.options.spacing / 2 : 0.;
-        var adjy = (!rotated && child.options.size == 0.5) ? this.options.spacing / 2 : 0.;
+        var adjx = rotated ? this.options.spacing / 2 : 0.;
+        var adjy = !rotated ? this.options.spacing / 2 : 0.;
         var circle = document.createElementNS(xmlns, "path");
         item.appendChild(circle);
         setAttrs(circle, merge({
@@ -155,11 +152,9 @@
           "cursor": "pointer"
         }));
         circle.onclick = () => {
-          if (child.options.onclick) {
-            child.options.onclick();
-          }
+          if (opts.onclick) opts.onclick();
           child.open(i);
-        }
+        };
 
         // ### Text Path
         var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
