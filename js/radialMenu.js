@@ -70,8 +70,6 @@
       this.childs = [];
       this.items = [];
 
-      this.isOpened = false;
-
       if (!this.parent) {
         this.svg = document.createElementNS(xmlns, "svg");
         this.svg.classList.add('radial-menu');
@@ -83,8 +81,7 @@
     },
 
     open: function () {
-      if (this.isOpened) return;
-
+      if (this.g) return;
       if (!this.parent) {
         this.insertSvg();
         this.buildChildren();
@@ -106,7 +103,6 @@
     /** all drawing magic is here */
     buildChildren: function () {
       var step = 360 / this.childs.length;
-      this.isOpened = true;
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.options["start-radius"];
       this.radiusBig = this.radiusSmall + 50;
 
@@ -193,15 +189,11 @@
     closeAllChildren: function () { this.childs.forEach(el => el.close()); },
 
     close: function () {
-      if (!this.isOpened) return;
-
-      if (this.g) {
-        this.g.parentNode.removeChild(this.g);
-        this.g = null;
-        this.items = [];
-        this.isOpened = false;
-        this.closeAllChildren();
-      }
+      if (!this.g) return;
+      this.g.parentNode.removeChild(this.g);
+      this.g = null;
+      this.items = [];
+      this.closeAllChildren();
     },
 
     recomputeBounds: function () {

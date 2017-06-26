@@ -54,7 +54,7 @@ $(function(){
 
     //  console.log(mainMenu,g.getBBox());
 
-    if (!mainMenu.isOpened) {
+    if (!opened) {
       opened = true;
 
       var x = e.pageX,
