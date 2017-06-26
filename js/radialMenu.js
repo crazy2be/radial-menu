@@ -1,7 +1,6 @@
 // kate: indent-width: 2;
 ;(function (window) {
   "use strict";
-  var xmlns = "http://www.w3.org/2000/svg";
 
   function merge(...objs) {
     var res = {};
@@ -11,23 +10,24 @@
 
   function setAttrs(el, obj) { for (var k in obj) { el.setAttribute(k, obj[k]); }}
 
+  function createElem(parent, kind, attrs) {
+    var node = document.createElementNS("http://www.w3.org/2000/svg", kind);
+    if (attrs) setAttrs(node, attrs);
+    if (parent) parent.appendChild(node);
+    return node;
+  }
   // For some reason svg textpaths must be created in a seperate element,
   // and linked to with a href. Don't ask me why this is the system they have,
   // but it is.
   function defsPath(svg, path) {
     var hash32 = s => s.reduce((a,b) => (a = ((a<<5)-a)+b.charCodeAt(0), a&a), 0);
     var hash = s => hash32(s).toString(36) + hash32(s.slice().reverse()).toString(36);
+
     var pathID = 'path' + hash(path.split(""));
     if (svg.querySelector("#" + pathID)) return pathID;
 
-    var defs = svg.querySelector("defs");
-    if (!defs) {
-      defs = document.createElementNS(xmlns, "defs");
-      svg.appendChild(defs);
-    }
-    var pathNode = document.createElementNS(xmlns, "path");
-    setAttrs(pathNode, {d: path, id: pathID});
-    defs.appendChild(pathNode);
+    var defs = svg.querySelector("defs") || createElem(svg, "defs");
+    createElem(defs, "path", {d: path, id: pathID});
     return pathID;
   }
 
@@ -62,12 +62,10 @@
       this.items = [];
 
       if (!this.parent) {
-        this.svg = document.createElementNS(xmlns, "svg");
+        this.svg = createElem(null, "svg",
+            {style: "position: absolute; left:50%; top:50%; margin:0;"});
         this.svg.classList.add('radial-menu');
-        setAttrs(this.svg, {style: "position: absolute; left:50%; top:50%; margin:0;"});
-
-        this.mainGroup = document.createElementNS(xmlns, "g");
-        this.svg.appendChild(this.mainGroup);
+        this.mainGroup = createElem(this.svg, "g");
       }
     },
 
@@ -94,58 +92,48 @@
     buildChildren: function () {
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.options["start-radius"];
       this.radiusBig = this.radiusSmall + 50;
-      this.g = document.createElementNS(xmlns, "g");
-      this.mainGroup.appendChild(this.g);
+      this.g = createElem(this.mainGroup, "g");
 
       for (let i = 0; i < this.childs.length; i++) {
         let opts = this.childs[i].options;
-        var item = document.createElementNS(xmlns, "g");
+        var item = createElem(this.g, "g")
         if (opts.class) item.classList.add(opts.class);
-        this.g.appendChild(item);
         this.items.push(item);
 
         // ### Background
-        var background = document.createElementNS(xmlns, "path");
         var circ = r => 2*Math.PI*r;
         var step = 360 / this.childs.length;
         var spaceDeg = (this.options.spacing/2) * 360;
         var spaceBig = spaceDeg / circ(this.radiusBig);
         var spaceSmall = spaceDeg / circ(this.radiusSmall);
-        setAttrs(background, merge({
+        var background = createElem(item, "path", {
           d: [].concat(
             "M", describeArc(this.radiusBig, i*step + spaceBig, (i+1)*step - spaceBig, false),
             "L", describeArc(this.radiusSmall, (i+1)*step - spaceSmall, i*step + spaceSmall, true),
             "Z").join(" "),
           "cursor": "pointer"
-        }));
+        })
         background.onclick = () => {
           if (opts.onclick) opts.onclick();
           this.childs[i].open(i);
         };
-        item.appendChild(background);
 
         // ### Text
-        var text = document.createElementNS(xmlns, "text");
-        setAttrs(text, {
+        var text = createElem(item, "text", {
           "text-anchor": "middle",
           "pointer-events": "none",
           "alignment-baseline": "baseline",
         });
-        item.appendChild(text);
 
         var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
         var start = i*step, end = (i+1)*step, sweep = end > 180;
         if (sweep) [start, end] = [end, start];
-        var textPath = document.createElementNS(xmlns, "textPath");
-        setAttrs(textPath, {
+        var textPath = createElem(text, "textPath", {
           "href": "#" + defsPath(this.svg, ["M"].concat(describeArc(radiusMid, start, end, sweep)).join(" ")),
           "startOffset": "50%",
           "alignment-baseline": "middle",
         });
-        text.appendChild(textPath);
-
-        var textNode = document.createTextNode(this.childs[i].label);
-        textPath.appendChild(textNode);
+        textPath.appendChild(document.createTextNode(this.childs[i].label));
       }
       this.recomputeBounds();
     },
