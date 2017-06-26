@@ -239,12 +239,8 @@
     },
 
     removeActive: function () {
-      this.circles.forEach((el, index) => {
-        el.classList.remove('open');
-      });
-      this.texts.forEach((el, index) => {
-        el.classList.remove('open');
-      });
+      this.circles.forEach((el, index) => el.classList.remove('open'));
+      this.texts.forEach((el, index) => el.classList.remove('open'));
     },
 
     /** add active styles */
@@ -258,8 +254,7 @@
       if (!this.childs.length) return;
 
       var bbox = this.g.getBBox();
-      var width = bbox.width;
-      var height = bbox.height;
+      var width = bbox.width, height = bbox.height;
       var cw = parseInt(this.svg.getAttribute('width')) || 0;
       var ch = parseInt(this.svg.getAttribute('height')) || 0;
 
