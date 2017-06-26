@@ -31,18 +31,15 @@
     return pathID;
   }
 
-  function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
-    var angleInRadians = angleInDegrees * Math.PI / 180.0;
-    return {
-      x: centerX + (radius * Math.cos(angleInRadians)),
-      y: centerY + (radius * Math.sin(angleInRadians))
-    };
+  function polarToCartesian(r, angleInDegrees) {
+    var theta = angleInDegrees * Math.PI / 180.0;
+    return { x: r * Math.cos(theta), y: r * Math.sin(theta) };
   }
 
-  function describeArc(x, y, radius, startAngle, endAngle, sweep){
-    var start = polarToCartesian(x, y, radius, endAngle);
-    var end = polarToCartesian(x, y, radius, startAngle);
-    var largeArcFlag = (endAngle - startAngle > 180);
+  function describeArc(radius, startAngle, endAngle, sweep) {
+    var start = polarToCartesian(radius, endAngle);
+    var end = polarToCartesian(radius, startAngle);
+    var largeArcFlag = (endAngle - startAngle) > 180;
     return [
       start.x, start.y,
       "A", radius, radius, 0, ~~largeArcFlag, ~~sweep, end.x, end.y];
