@@ -2,17 +2,6 @@
 ;(function (window) {
   "use strict";
 
-  function deepMerge(...objs) {
-    var res = {};
-    objs.forEach(obj => {
-      for (var key in obj) {
-        if (obj[key] && (typeof obj[key] === 'object')) {
-          res[key] = deepMerge(...objs.map(obj => obj[key]));
-        } else res[key] = obj[key];
-      }
-    });
-    return res;
-  }
   function merge(...objs) {
     var res = {};
     objs.forEach(obj => {for (var key in obj) { res[key] = obj[key]; }});
@@ -91,7 +80,7 @@
       "start-radius": 50,
       "onclick": null, //callback, none by default
     };
-    this.options = deepMerge(this.defaults, options);
+    this.options = merge(this.defaults, options);
     this.parentOptions = this.options;
     this.init();
   };
