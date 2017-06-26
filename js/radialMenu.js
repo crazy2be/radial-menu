@@ -58,7 +58,7 @@
     this.options = merge(defaults, options);
     this.init();
     this.svg = createElem(this.options["insert-at"], "svg",
-          {style: "position: absolute; left:50%; top:50%; margin:0;"});
+          {style: "position: absolute; left:0; top:0; margin:0;"});
     this.svg.classList.add('radial-menu');
     this.mainGroup = createElem(this.svg, "g");
   };
@@ -81,6 +81,12 @@
         return;
       }
       this.buildChildren();
+    },
+
+    openAt: function (x, y) {
+      this.open();
+      this.svg.style.left = x + 'px';
+      this.svg.style.top = y + 'px';
     },
 
     buildChildren: function () {
@@ -115,9 +121,9 @@
           "cursor": "pointer",
           "style": opts["background-style"],
         })
-        background.onclick = () => {
+        background.onclick = (ev) => {
           this.childs[i].open(i);
-          if (opts.onclick) opts.onclick();
+          if (opts.onclick) opts.onclick(ev);
         };
 
         // ### Text

@@ -46,28 +46,12 @@ $(function(){
   var child1113 = child111.add("Level41");
 
   var opened = false;
-
   window.addEventListener("click", function (e) {
     e.preventDefault();
     e.stopPropagation();
-    //var g = mainMenu.get();
-
-    //  console.log(mainMenu,g.getBBox());
-
     if (!opened) {
-      opened = true;
-
-      var x = e.pageX,
-        y = e.pageY;
-
-      mainMenu.open();
-
-      var $s  = $('svg');
-      $s.css({
-        top: y+'px',
-        left: x+'px'
-      });
-
+        mainMenu.openAt(e.pageX, e.pageY);
+        opened = true;
     }
   });
   
