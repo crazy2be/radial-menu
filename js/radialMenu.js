@@ -183,7 +183,8 @@
       // building points for drawing
       var points = circlePoints(step, this.radiusBig, this.radiusSmall, 0, 0, this.options.spacing);
       var childs_length = Object.keys(points).length;
-      this.g = this.mainGroup.group();
+      this.g = document.createElementNS(xmlns, "g");
+      this.mainGroup.node.appendChild(this.g);
 
       for (var i = 0; i < childs_length - 1; i++) {
         (function (i) {
@@ -195,7 +196,7 @@
           var adjx = (rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
           var adjy = (!rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
           var circle = document.createElementNS(xmlns, "path");
-          self.g.node.appendChild(circle);
+          self.g.appendChild(circle);
           self.circles.push(circle);
           setAttrs(circle, merge({
             d: "M " + points[i].after.big.x + " " + points[i].after.big.y +
@@ -222,7 +223,7 @@
           var sweep = ~~(points[i].after.big.x <= points[i+1].before.big.x);
           if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
 
-          var defsp = self.g.node.ownerSVGElement;
+          var defsp = self.g.ownerSVGElement;
           var defs = defsp.querySelector("defs");
           if (!defs) {
             defs = document.createElementNS(xmlns, "defs");
@@ -246,7 +247,7 @@
             "pointer-events": "none",
             "alignment-baseline": "baseline",
           });
-          self.g.node.appendChild(text);
+          self.g.appendChild(text);
           self.texts.push(text);
 
           var textPath = document.createElementNS(xmlns, "textPath");
@@ -274,8 +275,9 @@
       var self = this;
       if (!this.isOpened) return;
 
-      if (this.g && !this.g.removed) {
-        this.g.remove();
+      if (this.g) {
+        this.g.parentNode.removeChild(this.g);
+        this.g = null;
         this.circles = [];
         this.texts = [];
         this.isOpened = false;
@@ -313,7 +315,7 @@
     addAnimationIn: function () {
       if (!this.childs.length) return;
 
-      var bbox = this.g.node.getBBox();
+      var bbox = this.g.getBBox();
       var width = bbox.width;
       var height = bbox.height;
       var cw = parseInt(this.svg.getAttribute('width')) || 0;
