@@ -77,19 +77,19 @@
 
   radialMenu.prototype = {
     init: function () {
-      this.body = document.querySelector("body");
-      this.svg = document.createElementNS(xmlns, "svg");
-      this.svg.classList.add('radial-menu');
-      this.mainGroup = document.createElementNS(xmlns, "g");
-      this.svg.appendChild(this.mainGroup);
-
-      this.radiusBig;
-      this.radiusSmall = this.options["start-radius"];
-
       this.childs = [];
       this.items = [];
 
       this.isOpened = false;
+
+      if (!this.parent) {
+        this.svg = document.createElementNS(xmlns, "svg");
+        this.svg.classList.add('radial-menu');
+        setAttrs(this.svg, {style: "position: absolute; left:50%; top:50%; margin:0;"});
+
+        this.mainGroup = document.createElementNS(xmlns, "g");
+        this.svg.appendChild(this.mainGroup);
+      }
     },
 
     /** get menu holder */
@@ -102,7 +102,7 @@
       if (this.isOpened) return;
 
       if (!this.parent) {
-        this.buildSvg();
+        this.insertSvg();
         this.buildChildren();
       } else {
         this.parent.closeAllChildren();
@@ -114,16 +114,16 @@
     },
 
     /** creating SVG element and paste it to body */
-    buildSvg: function () {
-      setAttrs(this.svg, {style: "position: absolute; left:50%; top:50%; margin:0;"});
-      this.body.insertBefore(this.svg, this.body.firstChild);
+    insertSvg: function () {
+      var body = document.querySelector("body");
+      body.insertBefore(this.svg, body.firstChild);
     },
 
     /** all drawing magic is here */
     buildChildren: function () {
       var step = 360/this.childs.length;
       this.isOpened = true;
-      this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.radiusSmall;
+      this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.options["start-radius"];
       this.radiusBig = this.radiusSmall + 50;
 
       var points = circlePoints(step, this.radiusBig, this.radiusSmall, this.options.spacing);
@@ -272,15 +272,11 @@
     this.options = options;
     this.parent = parent;
 
-    // empty arrays too keep radial item objects
-    this.childs = [];
-    this.items = [];
-
     // menuItem SVG elements
     this.svg = this.parent.svg;
     this.mainGroup = this.parent.mainGroup;
 
-    this.isOpened = false;
+    this.init();
   };
 
   myMenuItem.prototype = radialMenu.prototype;
