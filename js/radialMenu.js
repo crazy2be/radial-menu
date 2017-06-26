@@ -8,20 +8,23 @@
     return res;
   }
 
-  function setAttrs(el, obj) {
-    for (var k in obj) {
-      el.setAttribute(k, obj[k]);
-    }
-  }
+  function setAttrs(el, obj) { for (var k in obj) { el.setAttribute(k, obj[k]); }}
 
-  // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
-  function makeid() {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (var i = 0; i < 20; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
+  function defsPath(svg, path) {
+    var hash32 = s => s.reduce((a,b) => (a = ((a<<5)-a)+b.charCodeAt(0), a&a), 0);
+    var hash = s => hash32(s).toString(36) + hash32(s.slice().reverse()).toString(36);
+    var pathID = 'path' + hash(path.split(""));
+    if (svg.querySelector("#" + pathID)) return pathID;
+
+    var defs = svg.querySelector("defs");
+    if (!defs) {
+      defs = document.createElementNS(xmlns, "defs");
+      svg.appendChild(defs);
     }
-    return text;
+    var pathNode = document.createElementNS(xmlns, "path");
+    setAttrs(pathNode, {d: path, id: pathID});
+    defs.appendChild(pathNode);
+    return pathID;
   }
 
   var deg2rad = (deg) => (deg / 180.) * Math.PI;
@@ -125,7 +128,6 @@
         var adjx = rotated ? this.options.spacing / 2 : 0.;
         var adjy = !rotated ? this.options.spacing / 2 : 0.;
         var circle = document.createElementNS(xmlns, "path");
-        item.appendChild(circle);
         setAttrs(circle, merge({
           d: "M " + p1.after.big.x + " " + p1.after.big.y +
             " A " + (this.radiusBig-adjx) + " " + (this.radiusBig-adjy) + " 0, 0, 1 " +
@@ -140,31 +142,7 @@
           if (opts.onclick) opts.onclick();
           child.open(i);
         };
-
-        // ### Text Path
-        var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
-        var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
-        var afterMid = mid(p1.after);
-        var beforeMid = mid(p2.before);
-        var sweep = ~~(p1.after.big.x <= p2.before.big.x);
-        if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
-
-        var defsp = this.g.ownerSVGElement;
-        var defs = defsp.querySelector("defs");
-        if (!defs) {
-          defs = document.createElementNS(xmlns, "defs");
-          defsp.appendChild(defs);
-        }
-        // TODO: This code seems to be called a lot (well, every time a menu
-        // item is clicked on), creating a lot of garbage, unused pathIDs.
-        // We shouldn't do this probably. Garbage is bad.
-        var pathID = makeid();
-        var path = document.createElementNS(xmlns, "path");
-        setAttrs(path, {
-          d: "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid,
-          id: pathID,
-        });
-        defs.appendChild(path);
+        item.appendChild(circle);
 
         // ### Text
         var text = document.createElementNS(xmlns, "text");
@@ -175,9 +153,15 @@
         });
         item.appendChild(text);
 
+        // ### Text Path
+        var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
+        var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
+        var afterMid = mid(p1.after), beforeMid = mid(p2.before);
+        var sweep = ~~(p1.after.big.x <= p2.before.big.x);
+        if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
         var textPath = document.createElementNS(xmlns, "textPath");
         setAttrs(textPath, {
-          "href": "#" + pathID,
+          "href": "#" + defsPath(this.svg, "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid),
           "startOffset": "50%",
           "alignment-baseline": "middle",
         });
