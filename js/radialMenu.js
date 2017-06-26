@@ -91,7 +91,6 @@
       body.insertBefore(this.svg, body.firstChild);
     },
 
-    /** all drawing magic is here */
     buildChildren: function () {
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.options["start-radius"];
       this.radiusBig = this.radiusSmall + 50;
@@ -105,25 +104,25 @@
         this.g.appendChild(item);
         this.items.push(item);
 
-        // ### Circle
-        var circle = document.createElementNS(xmlns, "path");
+        // ### Background
+        var background = document.createElementNS(xmlns, "path");
         var circ = r => 2*Math.PI*r;
         var step = 360 / this.childs.length;
         var spaceDeg = (this.options.spacing/2) * 360;
         var spaceBig = spaceDeg / circ(this.radiusBig);
         var spaceSmall = spaceDeg / circ(this.radiusSmall);
-        setAttrs(circle, merge({
+        setAttrs(background, merge({
           d: [].concat(
             "M", describeArc(this.radiusBig, i*step + spaceBig, (i+1)*step - spaceBig, false),
             "L", describeArc(this.radiusSmall, (i+1)*step - spaceSmall, i*step + spaceSmall, true),
             "Z").join(" "),
           "cursor": "pointer"
         }));
-        circle.onclick = () => {
+        background.onclick = () => {
           if (opts.onclick) opts.onclick();
           this.childs[i].open(i);
         };
-        item.appendChild(circle);
+        item.appendChild(background);
 
         // ### Text
         var text = document.createElementNS(xmlns, "text");
@@ -134,7 +133,6 @@
         });
         item.appendChild(text);
 
-        // ### Text Path
         var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
         var spaceMid = spaceDeg / circ(radiusMid);
         var start = i*step - spaceMid, end = (i+1)*step - spaceMid;
