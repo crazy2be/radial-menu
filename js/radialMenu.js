@@ -87,28 +87,9 @@
   /** radialMenu constructor */
   var radialMenu = function (options) {
     this.defaults = {
-      "stroke-width": 1, //stroke width around every menu item, in pixels
-      "spacing": 10, //amount of space between menu items
-      "opacity": 1, //opacity of the main menu
-      "font-size": 14, //font size of this item, in pixels
-      "font-family": 'Verdana',
-      "onclick": null, //callback, none by default
-      "circles-spacing": 0,
+      "spacing": 10, // amount of space between menu items
       "start-radius": 50,
-      "open": { // Style when open (child menu open)
-        "font-color": '#000000',
-        "stroke": '#000000',
-        "stroke-opacity": 1.0,
-        "fill": '#FFFFFF',
-        "fill-opacity": 1.0,
-      },
-      "closed": { // Style when closed / regular
-        "font-color": '#FFFFFF',
-        "stroke": '#000000',
-        "stroke-opacity": 1.0,
-        "fill": '#000000',
-        "fill-opacity": 0.5,
-      },
+      "onclick": null, //callback, none by default
     };
     this.options = deepMerge(this.defaults, options);
     this.parentOptions = this.options;
@@ -119,6 +100,7 @@
     init: function () {
       this.body = document.querySelector("body");
       this.svg = document.createElementNS(xmlns, "svg");
+      this.svg.classList.add('radial-menu');
       this.mainGroup = document.createElementNS(xmlns, "g");
       this.svg.appendChild(this.mainGroup);
 
@@ -132,12 +114,6 @@
       this.isOpened = false;
     },
 
-    /** finding new radiuses. Default - +50px */
-    calculateRadiuses: function () {
-      this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.radiusSmall;
-      this.radiusBig = this.radiusSmall + 50;
-    },
-
     /** get menu holder */
     get: function () {
       return this.mainGroup;
@@ -147,7 +123,6 @@
     open: function () {
       if (this.isOpened) return;
 
-      var self = this;
       if (!this.parent) {
         this.buildSvg();
         this.buildChildren();
@@ -163,100 +138,91 @@
     /** creating SVG element and paste it to body */
     buildSvg: function () {
       setAttrs(this.svg, {style: "position: absolute; left:50%; top:50%; margin:0;"});
-      setAttrs(this.mainGroup, {opacity: this.options.opacity});
       this.body.insertBefore(this.svg, this.body.firstChild);
     },
 
     /** all drawing magic is here */
     buildChildren: function () {
-      var self = this;
-
       var step = 360/this.childs.length;
-      // add flag means menu is opened
       this.isOpened = true;
-      // Calculating radiuses before children builds
-      this.calculateRadiuses();
+      this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.radiusSmall;
+      this.radiusBig = this.radiusSmall + 50;
       // building points for drawing
       var points = circlePoints(step, this.radiusBig, this.radiusSmall, 0, 0, this.options.spacing);
       var childs_length = Object.keys(points).length;
       this.g = document.createElementNS(xmlns, "g");
       this.mainGroup.appendChild(this.g);
 
-      for (var i = 0; i < childs_length - 1; i++) {
-        (function (i) {
-          // ### Circle
-          // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
-          // Basically the goal here is to change the diameter of the cicrle drawn when there are
-          // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
-          var rotated = (points[i].after.big.x === points[i+1].before.big.x) && !(points[i].after.big.y === points[i+1].before.big.y);
-          var adjx = (rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
-          var adjy = (!rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
-          var circle = document.createElementNS(xmlns, "path");
-          self.g.appendChild(circle);
-          self.circles.push(circle);
-          setAttrs(circle, merge({
-            d: "M " + points[i].after.big.x + " " + points[i].after.big.y +
-              " A " + (self.radiusBig-adjx) + " " + (self.radiusBig-adjy) + " 0, 0, 1 " +
-                      points[i+1].before.big.x + " " + points[i+1].before.big.y +
-              " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
-              " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
-                      points[i].after.small.x + " " + points[i].after.small.y + " Z",
-            "stroke-width": self.options["stroke-width"],
-            "cursor": "pointer"
-          }, only(self.childs[i].options.closed, ["stroke", "stroke-opacity", "fill", "fill-opacity"])));
-          circle.onclick = function () {
-            if (self.childs[i].options.onclick) {
-              self.childs[i].options.onclick();
-            }
-            self.childs[i].open(i);
+      for (let i = 0; i < childs_length - 1; i++) {
+        // ### Circle
+        // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
+        // Basically the goal here is to change the diameter of the cicrle drawn when there are
+        // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
+        var rotated = (points[i].after.big.x === points[i+1].before.big.x) && !(points[i].after.big.y === points[i+1].before.big.y);
+        var adjx = (rotated && this.childs[i].options.size == 0.5) ? this.options.spacing / 2 : 0.;
+        var adjy = (!rotated && this.childs[i].options.size == 0.5) ? this.options.spacing / 2 : 0.;
+        var circle = document.createElementNS(xmlns, "path");
+        this.g.appendChild(circle);
+        this.circles.push(circle);
+        setAttrs(circle, merge({
+          d: "M " + points[i].after.big.x + " " + points[i].after.big.y +
+            " A " + (this.radiusBig-adjx) + " " + (this.radiusBig-adjy) + " 0, 0, 1 " +
+                    points[i+1].before.big.x + " " + points[i+1].before.big.y +
+            " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
+            " A " + (this.radiusSmall-adjx) + " " + (this.radiusSmall-adjy) + " 0, 0, 0 " +
+                    points[i].after.small.x + " " + points[i].after.small.y + " Z",
+          "stroke-width": this.options["stroke-width"],
+          "cursor": "pointer"
+        }));
+        circle.onclick = () => {
+          if (this.childs[i].options.onclick) {
+            this.childs[i].options.onclick();
           }
+          this.childs[i].open(i);
+        }
 
-          // ### Text Path
-          var radiusMid = (self.radiusBig + self.radiusSmall) / 2;
-          var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
-          var afterMid = mid(points[i].after);
-          var beforeMid = mid(points[i+1].before);
-          var sweep = ~~(points[i].after.big.x <= points[i+1].before.big.x);
-          if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
+        // ### Text Path
+        var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
+        var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
+        var afterMid = mid(points[i].after);
+        var beforeMid = mid(points[i+1].before);
+        var sweep = ~~(points[i].after.big.x <= points[i+1].before.big.x);
+        if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
 
-          var defsp = self.g.ownerSVGElement;
-          var defs = defsp.querySelector("defs");
-          if (!defs) {
-            defs = document.createElementNS(xmlns, "defs");
-            defsp.appendChild(defs);
-          }
-          var pathID = makeid();
-          var path = document.createElementNS(xmlns, "path");
-          setAttrs(path, {
-            d: "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid,
-            id: pathID,
-          });
-          defs.appendChild(path);
+        var defsp = this.g.ownerSVGElement;
+        var defs = defsp.querySelector("defs");
+        if (!defs) {
+          defs = document.createElementNS(xmlns, "defs");
+          defsp.appendChild(defs);
+        }
+        var pathID = makeid();
+        var path = document.createElementNS(xmlns, "path");
+        setAttrs(path, {
+          d: "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid,
+          id: pathID,
+        });
+        defs.appendChild(path);
 
-          // ### Text
-          var text = document.createElementNS(xmlns, "text");
-          setAttrs(text, {
-            "fill": self.childs[i].options.closed["font-color"],
-            "font-family": self.childs[i].options["font-family"],
-            "font-size": self.childs[i].options["font-size"],
-            "text-anchor": "middle",
-            "pointer-events": "none",
-            "alignment-baseline": "baseline",
-          });
-          self.g.appendChild(text);
-          self.texts.push(text);
+        // ### Text
+        var text = document.createElementNS(xmlns, "text");
+        setAttrs(text, {
+          "text-anchor": "middle",
+          "pointer-events": "none",
+          "alignment-baseline": "baseline",
+        });
+        this.g.appendChild(text);
+        this.texts.push(text);
 
-          var textPath = document.createElementNS(xmlns, "textPath");
-          setAttrs(textPath, {
-            "href": "#" + pathID,
-            "startOffset": "50%",
-            "alignment-baseline": "middle",
-          });
-          text.appendChild(textPath);
+        var textPath = document.createElementNS(xmlns, "textPath");
+        setAttrs(textPath, {
+          "href": "#" + pathID,
+          "startOffset": "50%",
+          "alignment-baseline": "middle",
+        });
+        text.appendChild(textPath);
 
-          var textNode = document.createTextNode(self.childs[i].label);
-          textPath.appendChild(textNode);
-        })(i);
+        var textNode = document.createTextNode(this.childs[i].label);
+        textPath.appendChild(textNode);
       }
       this.addAnimationIn();
     },
@@ -268,7 +234,6 @@
 
     /** closing each circle */
     close: function () {
-      var self = this;
       if (!this.isOpened) return;
 
       if (this.g) {
@@ -287,19 +252,17 @@
 
     removeActive: function () {
       this.circles.forEach((el, index) => {
-        setAttrs(el, this.childs[index].options.closed);
+        el.classList.remove('open');
       });
       this.texts.forEach((el, index) => {
-        setAttrs(el, {"fill": this.childs[index].options.closed["font-color"]});
+        el.classList.remove('open');
       });
     },
 
     /** add active styles */
     setActive: function (index) {
-      setAttrs(this.circles[index], this.childs[index].options.open);
-      setAttrs(this.texts[index], {
-        "fill": this.childs[index].options.open["font-color"]
-      });
+      this.circles[index].classList.add('open');
+      this.texts[index].classList.add('open');
     },
 
     /** animating each circle in */

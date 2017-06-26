@@ -1,16 +1,5 @@
 $(function(){
-  var mainMenu = new radialMenu({
-    fill: 'rgba(0,0,0,0.75)',
-    "stroke-width" :1,
-    "open": {
-        "fill": '#000',
-        "font-color": '#fff',
-    },
-    "closed": {
-        "font-color": '#FFF',
-    },
-    "font-family":'sans-serif,FontAwesome',
-  });
+  var mainMenu = new radialMenu({});
 
   // FIRST LEVEL ITEMS
   // SIZE MORE THEN 1 - IGNORING THIS
