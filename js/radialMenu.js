@@ -155,6 +155,9 @@
           defs = document.createElementNS(xmlns, "defs");
           defsp.appendChild(defs);
         }
+        // TODO: This code seems to be called a lot (well, every time a menu
+        // item is clicked on), creating a lot of garbage, unused pathIDs.
+        // We shouldn't do this probably. Garbage is bad.
         var pathID = makeid();
         var path = document.createElementNS(xmlns, "path");
         setAttrs(path, {
