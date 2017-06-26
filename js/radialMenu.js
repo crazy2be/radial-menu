@@ -51,43 +51,36 @@
       "start-radius": 50,
       "onclick": null,
       "class": "",
+      "background-style": "",
       "size": 1,
+      "insert-at": document.body,
     };
     this.options = merge(defaults, options);
     this.init();
+    this.svg = createElem(this.options["insert-at"], "svg",
+          {style: "position: absolute; left:50%; top:50%; margin:0;"});
+    this.svg.classList.add('radial-menu');
+    this.mainGroup = createElem(this.svg, "g");
   };
 
   radialMenu.prototype = {
     init: function () {
       this.childs = [];
       this.items = [];
-
-      if (!this.parent) {
-        this.svg = createElem(null, "svg",
-            {style: "position: absolute; left:50%; top:50%; margin:0;"});
-        this.svg.classList.add('radial-menu');
-        this.mainGroup = createElem(this.svg, "g");
-      }
     },
 
     open: function () {
-      if (this.g) return;
-      if (!this.parent) {
-        this.insertSvg();
-        this.buildChildren();
-      } else {
-        this.parent.closeAllChildren();
-        this.parent.open();
-        this.buildChildren();
+      this.svg.style.display = '';
+      if (this.parent) {
         this.parent.items.forEach(el => el.classList.remove('open'));
         var index = this.parent.childs.indexOf(this);
         this.parent.items[index].classList.add('open');
       }
-    },
-
-    insertSvg: function () {
-      var body = document.querySelector("body");
-      body.insertBefore(this.svg, body.firstChild);
+      if (this.g) {
+        this.g.style.display = '';
+        return;
+      }
+      this.buildChildren();
     },
 
     buildChildren: function () {
@@ -119,11 +112,12 @@
             "M", describeArc(this.radiusBig, steps[i] + spaceBig, steps[i+1] - spaceBig, false),
             "L", describeArc(this.radiusSmall, steps[i+1] - spaceSmall, steps[i] + spaceSmall, true),
             "Z").join(" "),
-          "cursor": "pointer"
+          "cursor": "pointer",
+          "style": opts["background-style"],
         })
         background.onclick = () => {
-          if (opts.onclick) opts.onclick();
           this.childs[i].open(i);
+          if (opts.onclick) opts.onclick();
         };
 
         // ### Text
@@ -149,17 +143,15 @@
     closeAllChildren: function () { this.childs.forEach(el => el.close()); },
 
     close: function () {
-      if (!this.g) return;
-      this.g.parentNode.removeChild(this.g);
-      this.g = null;
-      this.items = [];
+      if (this.g) this.g.style.display = "none";
+      if (!this.parent) this.svg.style.display = "none";
       this.closeAllChildren();
     },
 
     recomputeBounds: function () {
       if (!this.childs.length) return;
 
-      var bbox = this.g.getBBox(), w = bbox.width, h = bbox.height;
+      var bbox = this.g.getBBox(), w = bbox.width + 100, h = bbox.height + 100;
       var cw = parseInt(this.svg.getAttribute('width')) || 0;
       var ch = parseInt(this.svg.getAttribute('height')) || 0;
       if (cw >= w && ch >= h) return;
