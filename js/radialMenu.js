@@ -1,6 +1,7 @@
 // kate: indent-width: 2;
 ;(function (window) {
   "use strict";
+  var xmlns = "http://www.w3.org/2000/svg";
 
   function merge(...objs) {
     var res = {};
@@ -10,6 +11,9 @@
 
   function setAttrs(el, obj) { for (var k in obj) { el.setAttribute(k, obj[k]); }}
 
+  // For some reason svg textpaths must be created in a seperate element,
+  // and linked to with a href. Don't ask me why this is the system they have,
+  // but it is.
   function defsPath(svg, path) {
     var hash32 = s => s.reduce((a,b) => (a = ((a<<5)-a)+b.charCodeAt(0), a&a), 0);
     var hash = s => hash32(s).toString(36) + hash32(s.slice().reverse()).toString(36);
@@ -27,14 +31,12 @@
     return pathID;
   }
 
-  var deg2rad = (deg) => (deg / 180.) * Math.PI;
-  var xmlns = "http://www.w3.org/2000/svg";
-
   function circlePoints(step, rBig, rSmall, spacing) {
     var points = [];
     var circleLengthBig   = 2*Math.PI*rBig;
     var circleLengthSmall = 2*Math.PI*rSmall;
     var cos = Math.cos, sin = Math.sin;
+    var deg2rad = (deg) => (deg / 180.) * Math.PI;
 
     for (var i = 0; i <= 360; i += Number(step.toFixed(1))) {
       var spaceDeg = (spacing/2) * 360;
@@ -56,7 +58,6 @@
     return points;
   };
 
-  /** radialMenu constructor */
   var radialMenu = function (options) {
     var defaults = {
       "spacing": 10, // amount of space between menu items
