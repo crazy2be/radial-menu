@@ -31,32 +31,22 @@
     return pathID;
   }
 
-  function circlePoints(step, rBig, rSmall, spacing) {
-    var points = [];
-    var circleLengthBig   = 2*Math.PI*rBig;
-    var circleLengthSmall = 2*Math.PI*rSmall;
-    var cos = Math.cos, sin = Math.sin;
-    var deg2rad = (deg) => (deg / 180.) * Math.PI;
+  function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+    var angleInRadians = angleInDegrees * Math.PI / 180.0;
+    return {
+      x: centerX + (radius * Math.cos(angleInRadians)),
+      y: centerY + (radius * Math.sin(angleInRadians))
+    };
+  }
 
-    for (var i = 0; i <= 360; i += Number(step.toFixed(1))) {
-      var spaceDeg = (spacing/2) * 360;
-      var beforeSmall = deg2rad(i - spaceDeg/circleLengthBig);
-      var beforeBig   = deg2rad(i - spaceDeg/circleLengthSmall);
-      var afterSmall  = deg2rad(i + spaceDeg/circleLengthBig);
-      var afterBig    = deg2rad(i + spaceDeg/circleLengthSmall);
-      points.push({
-        before: {
-          big:   {x: ~~(rBig * cos(beforeSmall)), y: ~~(rBig * sin(beforeSmall))},
-          small: {x: ~~(rSmall * cos(beforeBig)), y: ~~(rSmall * sin(beforeBig))}
-        },
-        after: {
-          big:   { x: ~~(rBig * cos(afterSmall)), y: ~~(rBig * sin(afterSmall))},
-          small: { x: ~~(rSmall * cos(afterBig)), y: ~~(rSmall * sin(afterBig))}
-        }
-      });
-    }
-    return points;
-  };
+  function describeArc(x, y, radius, startAngle, endAngle, sweep){
+    var start = polarToCartesian(x, y, radius, endAngle);
+    var end = polarToCartesian(x, y, radius, startAngle);
+    var largeArcFlag = (endAngle - startAngle > 180);
+    return [
+      start.x, start.y,
+      "A", radius, radius, 0, ~~largeArcFlag, ~~sweep, end.x, end.y];
+  }
 
   var radialMenu = function (options) {
     var defaults = {
@@ -108,76 +98,33 @@
     buildChildren: function () {
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.options["start-radius"];
       this.radiusBig = this.radiusSmall + 50;
-
-      var step = 360 / this.childs.length;
-      var points = circlePoints(step, this.radiusBig, this.radiusSmall, this.options.spacing);
       this.g = document.createElementNS(xmlns, "g");
       this.mainGroup.appendChild(this.g);
 
-      for (let i = 0; i < points.length - 1; i++) {
-        let child = this.childs[i], opts = child.options;
+      for (let i = 0; i < this.childs.length; i++) {
+        let opts = this.childs[i].options;
         var item = document.createElementNS(xmlns, "g");
         if (opts.class) item.classList.add(opts.class);
         this.g.appendChild(item);
         this.items.push(item);
 
-        function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
-          var angleInRadians = angleInDegrees * Math.PI / 180.0;
-
-          return {
-            x: centerX + (radius * Math.cos(angleInRadians)),
-            y: centerY + (radius * Math.sin(angleInRadians))
-          };
-        }
-
-        function describeArc(x, y, radius, startAngle, endAngle, sweep){
-          var start = polarToCartesian(x, y, radius, endAngle);
-          var end = polarToCartesian(x, y, radius, startAngle);
-          var largeArcFlag = (endAngle - startAngle > 180);
-          return [
-            start.x, start.y,
-            "A", radius, radius, 0, ~~largeArcFlag, ~~sweep, end.x, end.y];
-        }
         // ### Circle
-        // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
-        // Basically the goal here is to change the diameter of the cicrle drawn when there are
-        // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
-        var p1 = points[i], p2 = points[i + 1];
-        //var rotated = (p1.after.big.x === p2.before.big.x) && !(p1.after.big.y === p2.before.big.y);
-        //var adjx = 0;//rotated ? this.options.spacing / 2 : 0.;
-        //var adjy = 0;//!rotated ? this.options.spacing / 2 : 0.;
         var circle = document.createElementNS(xmlns, "path");
-        var aaaa = 360 / this.childs.length;
         var circ = r => 2*Math.PI*r;
-
-        var circleLengthBig   = 2*Math.PI*this.radiusBig;
-        var circleLengthSmall = 2*Math.PI*this.radiusSmall;
-//         var cos = Math.cos, sin = Math.sin;
-//         var deg2rad = (deg) => (deg / 180.) * Math.PI;
         var step = 360 / this.childs.length;
-
-//     for (var i = 0; i <= 360; i += Number(step.toFixed(1))) {
-      var spaceDeg = (this.options.spacing/2) * 360;
-//       var beforeSmall = deg2rad(i - spaceDeg/circleLengthBig);
-//       var beforeBig   = deg2rad(i - spaceDeg/circleLengthSmall);
-//       var afterSmall  = deg2rad(i + spaceDeg/circleLengthBig);
-//       var afterBig    = deg2rad(i + spaceDeg/circleLengthSmall);
+        var spaceDeg = (this.options.spacing/2) * 360;
+        var spaceBig = spaceDeg / circ(this.radiusBig);
+        var spaceSmall = spaceDeg / circ(this.radiusSmall);
         setAttrs(circle, merge({
           d: [].concat(
-            "M", describeArc(0, 0, this.radiusBig, i*step + spaceDeg/circleLengthBig, (i+1)*step - spaceDeg/circleLengthBig, false),
-            "L", describeArc(0, 0, this.radiusSmall, (i+1)*step - spaceDeg/circleLengthSmall, i*step + spaceDeg/circleLengthSmall, true),
-                       "Z").join(" "),
-          //d: "M " + p1.after.big.x + " " + p1.after.big.y +
-          //  " A " + (this.radiusBig-adjx) + " " + (this.radiusBig-adjy) + " 0, 0, 1 " +
-          //          p2.before.big.x + " " + p2.before.big.y +
-          //  " L " + p2.before.small.x + " " + p2.before.small.y +
-          //  " A " + (this.radiusSmall-adjx) + " " + (this.radiusSmall-adjy) + " 0, 0, 0 " +
-          //          p1.after.small.x + " " + p1.after.small.y + " Z",
+            "M", describeArc(0, 0, this.radiusBig, i*step + spaceBig, (i+1)*step - spaceBig, false),
+            "L", describeArc(0, 0, this.radiusSmall, (i+1)*step - spaceSmall, i*step + spaceSmall, true),
+            "Z").join(" "),
           "cursor": "pointer"
         }));
         circle.onclick = () => {
           if (opts.onclick) opts.onclick();
-          child.open(i);
+          this.childs[i].open(i);
         };
         item.appendChild(circle);
 
@@ -192,19 +139,19 @@
 
         // ### Text Path
         var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
-        var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
-        var afterMid = mid(p1.after), beforeMid = mid(p2.before);
-        var sweep = ~~(p1.after.big.x <= p2.before.big.x);
-        if (sweep) [afterMid, beforeMid] = [beforeMid, afterMid];
+        var spaceMid = spaceDeg / circ(radiusMid);
+        var start = i*step - spaceMid, end = (i+1)*step - spaceMid;
+        var sweep = end > 180;
+        if (sweep) [start, end] = [end, start];
         var textPath = document.createElementNS(xmlns, "textPath");
         setAttrs(textPath, {
-          "href": "#" + defsPath(this.svg, "M " + beforeMid + " A " + radiusMid + " " + radiusMid + " 0, 0, " + sweep + " " + afterMid),
+          "href": "#" + defsPath(this.svg, ["M"].concat(describeArc(0, 0, radiusMid, start, end, sweep)).join(" ")),
           "startOffset": "50%",
           "alignment-baseline": "middle",
         });
         text.appendChild(textPath);
 
-        var textNode = document.createTextNode(child.label);
+        var textNode = document.createTextNode(this.childs[i].label);
         textPath.appendChild(textNode);
       }
       this.recomputeBounds();
