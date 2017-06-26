@@ -2,11 +2,10 @@
 ;(function (window) {
   "use strict";
 
-  function merge(a, b) {
-    var c = {};
-    for (var key in a) { c[key] = a[key]; }
-    for (var key in b) { c[key] = b[key]; }
-    return c;
+  function merge(...objs) {
+    var res = {};
+    objs.forEach(obj => {for (var key in obj) { res[key] = obj[key]; }});
+    return res;
   };
 
   function only(o, keys) {
