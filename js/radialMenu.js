@@ -9,8 +9,6 @@
   }
 
   function setAttrs(el, obj) {
-    // Accept either raw nodes or snap nodes interchangably.
-    if (el.node) el = el.node;
     for (var k in obj) {
       el.setAttribute(k, obj[k]);
     }
