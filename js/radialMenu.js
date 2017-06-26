@@ -97,12 +97,7 @@
     };
     this.options = merge(this.defaults, options);
     this.parentOptions = this.options;
-
-    if (self.Snap) {
-      this.init();
-    } else {
-      console.log("Snap.svg library is required");
-    }
+    this.init();
   };
 
   radialMenu.prototype = {
