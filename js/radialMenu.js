@@ -89,8 +89,7 @@
       this.radiusSmall = this.options["start-radius"];
 
       this.childs = [];
-      this.circles = [];
-      this.texts = [];
+      this.items = [];
 
       this.isOpened = false;
     },
@@ -134,6 +133,9 @@
       this.mainGroup.appendChild(this.g);
 
       for (let i = 0; i < points.length - 1; i++) {
+        var item = document.createElementNS(xmlns, "g");
+        this.g.appendChild(item);
+        this.items.push(item);
         // ### Circle
         // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
         // Basically the goal here is to change the diameter of the cicrle drawn when there are
@@ -142,8 +144,7 @@
         var adjx = (rotated && this.childs[i].options.size == 0.5) ? this.options.spacing / 2 : 0.;
         var adjy = (!rotated && this.childs[i].options.size == 0.5) ? this.options.spacing / 2 : 0.;
         var circle = document.createElementNS(xmlns, "path");
-        this.g.appendChild(circle);
-        this.circles.push(circle);
+        item.appendChild(circle);
         setAttrs(circle, merge({
           d: "M " + points[i].after.big.x + " " + points[i].after.big.y +
             " A " + (this.radiusBig-adjx) + " " + (this.radiusBig-adjy) + " 0, 0, 1 " +
@@ -190,8 +191,7 @@
           "pointer-events": "none",
           "alignment-baseline": "baseline",
         });
-        this.g.appendChild(text);
-        this.texts.push(text);
+        item.appendChild(text);
 
         var textPath = document.createElementNS(xmlns, "textPath");
         setAttrs(textPath, {
@@ -219,8 +219,7 @@
       if (this.g) {
         this.g.parentNode.removeChild(this.g);
         this.g = null;
-        this.circles = [];
-        this.texts = [];
+        this.items = [];
         this.isOpened = false;
         this.closeAllChildren();
       }
@@ -231,14 +230,12 @@
     },
 
     removeActive: function () {
-      this.circles.forEach((el, index) => el.classList.remove('open'));
-      this.texts.forEach((el, index) => el.classList.remove('open'));
+      this.items.forEach(el => el.classList.remove('open'));
     },
 
     /** add active styles */
     setActive: function (index) {
-      this.circles[index].classList.add('open');
-      this.texts[index].classList.add('open');
+      this.items[index].classList.add('open');
     },
 
     /** animating each circle in */
@@ -279,8 +276,7 @@
 
     // empty arrays too keep radial item objects
     this.childs = [];
-    this.circles = [];
-    this.texts = [];
+    this.items = [];
 
     // push just created menu item to parents items array
     this.parent.childs.push(this);
