@@ -52,6 +52,7 @@
       "onclick": null,
       "class": "",
       "background-style": "",
+      "text-style": "",
       "size": 1,
       "insert-at": document.body,
       "deg-start": 90,
@@ -132,6 +133,7 @@
           "text-anchor": "middle",
           "pointer-events": "none",
           "alignment-baseline": "baseline",
+          "style": opts["text-style"],
         });
 
         var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
