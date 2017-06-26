@@ -134,9 +134,7 @@
         item.appendChild(text);
 
         var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
-        var spaceMid = spaceDeg / circ(radiusMid);
-        var start = i*step - spaceMid, end = (i+1)*step - spaceMid;
-        var sweep = end > 180;
+        var start = i*step, end = (i+1)*step, sweep = end > 180;
         if (sweep) [start, end] = [end, start];
         var textPath = document.createElementNS(xmlns, "textPath");
         setAttrs(textPath, {
