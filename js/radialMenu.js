@@ -32,6 +32,7 @@
   }
   
   var deg2rad = (deg) => (deg / 180.) * Math.PI;
+  var xmlns = "http://www.w3.org/2000/svg";
 
   /** circlePoints: step, big radius, small radius, center point x/y, spacing between items */
   function circlePoints(step, r1, r2, cx, cy, spacing) {
@@ -106,7 +107,7 @@
   radialMenu.prototype = {
     init: function () {
       this.body = document.querySelector("body");
-      this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      this.svg = document.createElementNS(xmlns, "svg");
 
       // radialMenu SVG elements
       this.s = Snap(this.svg);
@@ -191,25 +192,25 @@
           var rotated = (points[i].after.big.x === points[i+1].before.big.x) && !(points[i].after.big.y === points[i+1].before.big.y);
           var adjx = (rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
           var adjy = (!rotated && self.childs[i].options.size == 0.5) ? self.options.spacing / 2 : 0.;
-          self.circles.push(self.g.path(
+          var circle = document.createElementNS(xmlns, "path");
+          self.g.node.appendChild(circle);
+          self.circles.push(circle);
+          setAttrs(circle, {d:
              "M " + points[i].after.big.x + " " + points[i].after.big.y +
             " A " + (self.radiusBig-adjx) + " " + (self.radiusBig-adjy) + " 0, 0, 1 " +
                     points[i+1].before.big.x + " " + points[i+1].before.big.y +
             " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
             " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
-                    points[i].after.small.x + " " + points[i].after.small.y + " Z")
-          .click(function () {
-            if (self.childs[i].options.onclick) {
-              self.childs[i].options.onclick();
-            }
-            self.childs[i].open(i);
-          }));
+                    points[i].after.small.x + " " + points[i].after.small.y + " Z"});
           setAttrs(self.circles[i], merge({
             "stroke-width": self.options["stroke-width"],
             "cursor": "pointer"
           }, only(self.childs[i].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"])));
-          self.circles[i].node.onclick = function () {
-            console.log("TESTING");
+          self.circles[i].onclick = function () {
+            if (self.childs[i].options.onclick) {
+              self.childs[i].options.onclick();
+            }
+            self.childs[i].open(i);
           }
 
           var radiusMid = (self.radiusBig + self.radiusSmall) / 2;
