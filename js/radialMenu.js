@@ -108,8 +108,9 @@
         this.parent.closeAllChildren();
         this.parent.open();
         this.buildChildren();
-        this.parent.removeActive();
-        this.parent.setActive(this.parent.childs.indexOf(this));
+        this.parent.items.forEach(el => el.classList.remove('open'));
+        var index = this.parent.childs.indexOf(this);
+        this.parent.items[index].classList.add('open');
       }
     },
 
@@ -202,7 +203,7 @@
         var textNode = document.createTextNode(this.childs[i].label);
         textPath.appendChild(textNode);
       }
-      this.addAnimationIn();
+      this.recomputeBounds();
     },
 
     /** close childs of every item */
@@ -227,17 +228,7 @@
       }
     },
 
-    removeActive: function () {
-      this.items.forEach(el => el.classList.remove('open'));
-    },
-
-    /** add active styles */
-    setActive: function (index) {
-      this.items[index].classList.add('open');
-    },
-
-    /** animating each circle in */
-    addAnimationIn: function () {
+    recomputeBounds: function () {
       if (!this.childs.length) return;
 
       var bbox = this.g.getBBox();
