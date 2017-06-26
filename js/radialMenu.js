@@ -14,14 +14,6 @@
     return res;
   }
 
-  /** checking if circles have size parameter */
-  function checkSize(arr) {
-    var total_size = arr.map(el => el.options.size).filter(s => s).reduce((t, s) => t + s, 0);
-    // I think that > 1 means we set it in code?
-    if ((total_size > 1) || (total_size === 0)) return false;
-    else return total_size.toFixed(2);
-  }
-
   function setAttrs(el, obj) {
     // Accept either raw nodes or snap nodes interchangably.
     if (el.node) el = el.node;
@@ -29,7 +21,7 @@
       el.setAttribute(k, obj[k]);
     }
   }
-  
+
   var deg2rad = (deg) => (deg / 180.) * Math.PI;
   var xmlns = "http://www.w3.org/2000/svg";
 
