@@ -40,9 +40,10 @@
     var start = polarToCartesian(radius, endAngle);
     var end = polarToCartesian(radius, startAngle);
     var largeArcFlag = Math.abs(endAngle - startAngle) > 180;
+    var r = n => n.toFixed(2);
     return [
-      start.x, start.y,
-      "A", radius, radius, 0, ~~largeArcFlag, ~~sweep, end.x, end.y];
+      r(start.x), r(start.y),
+      "A", r(radius), r(radius), 0, ~~largeArcFlag, ~~sweep, r(end.x), r(end.y)];
   }
 
   var radialMenu = function (options) {
