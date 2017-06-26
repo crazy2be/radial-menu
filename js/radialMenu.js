@@ -2,6 +2,17 @@
 ;(function (window) {
   "use strict";
 
+  function deepMerge(...objs) {
+    var res = {};
+    objs.forEach(obj => {
+      for (var key in obj) {
+        if (obj[key] && (typeof obj[key] === 'object')) {
+          res[key] = deepMerge(...objs.map(obj => obj[key]));
+        } else res[key] = obj[key];
+      }
+    });
+    return res;
+  }
   function merge(...objs) {
     var res = {};
     objs.forEach(obj => {for (var key in obj) { res[key] = obj[key]; }});
@@ -81,21 +92,25 @@
       "opacity": 1, //opacity of the main menu
       "font-size": 14, //font size of this item, in pixels
       "font-family": 'Verdana',
-      "font-color": '#000000',
-      "active-font-color": '#000000',
-      "active-stroke": '#000000',
-      "active-stroke-opacity": 1.0,
-      "active-fill": '#FFFFFF',
-      "active-fill-opacity": 1.0,
-      "stroke": '#000000',
-      "stroke-opacity": 1.0,
-      "fill": '#FFFFFF',
-      "fill-opacity": 0.5,
       "onclick": null, //callback, none by default
       "circles-spacing": 0,
-      "start-radius": 50
+      "start-radius": 50,
+      "open": { // Style when open (child menu open)
+        "font-color": '#000000',
+        "stroke": '#000000',
+        "stroke-opacity": 1.0,
+        "fill": '#FFFFFF',
+        "fill-opacity": 1.0,
+      },
+      "closed": { // Style when closed / regular
+        "font-color": '#FFFFFF',
+        "stroke": '#000000',
+        "stroke-opacity": 1.0,
+        "fill": '#000000',
+        "fill-opacity": 0.5,
+      },
     };
-    this.options = merge(this.defaults, options);
+    this.options = deepMerge(this.defaults, options);
     this.parentOptions = this.options;
     this.init();
   };
@@ -188,7 +203,7 @@
                       points[i].after.small.x + " " + points[i].after.small.y + " Z",
             "stroke-width": self.options["stroke-width"],
             "cursor": "pointer"
-          }, only(self.childs[i].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"])));
+          }, only(self.childs[i].options.closed, ["stroke", "stroke-opacity", "fill", "fill-opacity"])));
           circle.onclick = function () {
             if (self.childs[i].options.onclick) {
               self.childs[i].options.onclick();
@@ -221,7 +236,7 @@
           // ### Text
           var text = document.createElementNS(xmlns, "text");
           setAttrs(text, {
-            "fill": self.childs[i].options["font-color"],
+            "fill": self.childs[i].options.closed["font-color"],
             "font-family": self.childs[i].options["font-family"],
             "font-size": self.childs[i].options["font-size"],
             "text-anchor": "middle",
@@ -272,23 +287,18 @@
 
     removeActive: function () {
       this.circles.forEach((el, index) => {
-        setAttrs(el, only(this.childs[index].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"]));
+        setAttrs(el, this.childs[index].options.closed);
       });
       this.texts.forEach((el, index) => {
-        setAttrs(el, {"fill": this.childs[index].options["font-color"]});
+        setAttrs(el, {"fill": this.childs[index].options.closed["font-color"]});
       });
     },
 
     /** add active styles */
     setActive: function (index) {
-      setAttrs(this.circles[index], {
-        "stroke": this.childs[index].options["active-stroke"],
-        "stroke-opacity": this.childs[index].options["active-stroke-opacity"],
-        "fill": this.childs[index].options["active-fill"],
-        "fill-opacity": this.childs[index].options["active-fill-opacity"]
-      });
+      setAttrs(this.circles[index], this.childs[index].options.open);
       setAttrs(this.texts[index], {
-        "fill": this.childs[index].options["active-font-color"]
+        "fill": this.childs[index].options.open["font-color"]
       });
     },
 

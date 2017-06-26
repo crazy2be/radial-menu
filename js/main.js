@@ -2,10 +2,14 @@ $(function(){
   var mainMenu = new radialMenu({
     fill: 'rgba(0,0,0,0.75)',
     "stroke-width" :1,
-    "font-color": '#FFF',
-    "active-fill": '#000',
-    "active-font-color": '#fff',
-    "font-family":'sans-serif,FontAwesome'
+    "open": {
+        "fill": '#000',
+        "font-color": '#fff',
+    },
+    "closed": {
+        "font-color": '#FFF',
+    },
+    "font-family":'sans-serif,FontAwesome',
   });
 
   // FIRST LEVEL ITEMS
