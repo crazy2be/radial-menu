@@ -109,11 +109,8 @@
     init: function () {
       this.body = document.querySelector("body");
       this.svg = document.createElementNS(xmlns, "svg");
-
-      // radialMenu SVG elements
-      this.s = Snap(this.svg);
-      this.mainGroup = this.s.group();
-      this.mainGroup.addClass("radialMenu-holder");
+      this.mainGroup = document.createElementNS(xmlns, "g");
+      this.svg.appendChild(this.mainGroup);
 
       this.radiusBig;
       this.radiusSmall = this.options["start-radius"];
@@ -129,16 +126,6 @@
     calculateRadiuses: function () {
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.radiusSmall;
       this.radiusBig = this.radiusSmall + 50;
-
-      var circleLength = 2*Math.PI*this.radiusBig;
-
-      var text = this.childs.reduce((text, el) => text + el.label, "");
-      var textLength = this.s.text(0, 0, text);
-      textLength.toDefs();
-      if (circleLength < textLength.node.clientWidth) {
-        var textRadius = textLength.node.clientWidth / (2*Math.PI);
-        this.radiusBig = textRadius + (textRadius-this.radiusSmall) + 10;
-      }
     },
 
     /** get menu holder */
@@ -165,9 +152,8 @@
 
     /** creating SVG element and paste it to body */
     buildSvg: function () {
-      this.svg.setAttribute("style", "position: absolute; left:50%; top:50%; margin:0;");
-      this.mainGroup.attr("opacity", this.options.opacity);
-      // this.mainGroup.transform("0");
+      setAttrs(this.svg, {style: "position: absolute; left:50%; top:50%; margin:0;"});
+      setAttrs(this.mainGroup, {opacity: this.options.opacity});
       this.body.insertBefore(this.svg, this.body.firstChild);
     },
 
@@ -184,7 +170,7 @@
       var points = circlePoints(step, this.radiusBig, this.radiusSmall, 0, 0, this.options.spacing);
       var childs_length = Object.keys(points).length;
       this.g = document.createElementNS(xmlns, "g");
-      this.mainGroup.node.appendChild(this.g);
+      this.mainGroup.appendChild(this.g);
 
       for (var i = 0; i < childs_length - 1; i++) {
         (function (i) {
