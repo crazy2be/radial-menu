@@ -6,12 +6,6 @@
     var res = {};
     objs.forEach(obj => {for (var key in obj) { res[key] = obj[key]; }});
     return res;
-  };
-
-  function only(o, keys) {
-    var res = {};
-    for (var i = 0; i < keys.length; i++) { res[keys[i]] = o[keys[i]]; }
-    return res;
   }
 
   function setAttrs(el, obj) {
