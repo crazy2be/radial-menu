@@ -22,6 +22,16 @@
     }
   }
 
+  // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+  function makeid() {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < 20; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+  }
+
   var deg2rad = (deg) => (deg / 180.) * Math.PI;
   var xmlns = "http://www.w3.org/2000/svg";
 
@@ -177,6 +187,7 @@
 
       for (var i = 0; i < childs_length - 1; i++) {
         (function (i) {
+          // ### Circle
           // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
           // Basically the goal here is to change the diameter of the cicrle drawn when there are
           // only two segments, because otherwise you end up with a visibly distorted "egg" shape.
@@ -186,24 +197,24 @@
           var circle = document.createElementNS(xmlns, "path");
           self.g.node.appendChild(circle);
           self.circles.push(circle);
-          setAttrs(circle, {d:
-             "M " + points[i].after.big.x + " " + points[i].after.big.y +
-            " A " + (self.radiusBig-adjx) + " " + (self.radiusBig-adjy) + " 0, 0, 1 " +
-                    points[i+1].before.big.x + " " + points[i+1].before.big.y +
-            " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
-            " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
-                    points[i].after.small.x + " " + points[i].after.small.y + " Z"});
-          setAttrs(self.circles[i], merge({
+          setAttrs(circle, merge({
+            d: "M " + points[i].after.big.x + " " + points[i].after.big.y +
+              " A " + (self.radiusBig-adjx) + " " + (self.radiusBig-adjy) + " 0, 0, 1 " +
+                      points[i+1].before.big.x + " " + points[i+1].before.big.y +
+              " L " + points[i+1].before.small.x + " " + points[i+1].before.small.y +
+              " A " + (self.radiusSmall-adjx) + " " + (self.radiusSmall-adjy) + " 0, 0, 0 " +
+                      points[i].after.small.x + " " + points[i].after.small.y + " Z",
             "stroke-width": self.options["stroke-width"],
             "cursor": "pointer"
           }, only(self.childs[i].options, ["stroke", "stroke-opacity", "fill", "fill-opacity"])));
-          self.circles[i].onclick = function () {
+          circle.onclick = function () {
             if (self.childs[i].options.onclick) {
               self.childs[i].options.onclick();
             }
             self.childs[i].open(i);
           }
 
+          // ### Text Path
           var radiusMid = (self.radiusBig + self.radiusSmall) / 2;
           var mid = (a) => (a.big.x + a.small.x)/2  +  " "  +  (a.big.y + a.small.y)/2
           var afterMid = mid(points[i].after);
@@ -217,15 +228,6 @@
             defs = document.createElementNS(xmlns, "defs");
             defsp.appendChild(defs);
           }
-          // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
-          function makeid() {
-              var text = "";
-              var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-              for (var i = 0; i < 20; i++) {
-                  text += possible.charAt(Math.floor(Math.random() * possible.length));
-              }
-              return text;
-          }
           var pathID = makeid();
           var path = document.createElementNS(xmlns, "path");
           setAttrs(path, {
@@ -234,30 +236,29 @@
           });
           defs.appendChild(path);
 
-
+          // ### Text
           var text = document.createElementNS(xmlns, "text");
-          self.g.node.appendChild(text);
-          self.texts.push(text);
-
-          var textPath = document.createElementNS(xmlns, "textPath");
-          setAttrs(textPath, {"href": "#" + pathID});
-          text.appendChild(textPath);
-
-          var textNode = document.createTextNode(self.childs[i].label);
-          textPath.appendChild(textNode);
-
           setAttrs(text, {
             "fill": self.childs[i].options["font-color"],
             "font-family": self.childs[i].options["font-family"],
             "font-size": self.childs[i].options["font-size"],
             "text-anchor": "middle",
             "pointer-events": "none",
-            "alignment-baseline": "baseline"
+            "alignment-baseline": "baseline",
           });
+          self.g.node.appendChild(text);
+          self.texts.push(text);
+
+          var textPath = document.createElementNS(xmlns, "textPath");
           setAttrs(textPath, {
+            "href": "#" + pathID,
             "startOffset": "50%",
-            "alignment-baseline": "middle"
+            "alignment-baseline": "middle",
           });
+          text.appendChild(textPath);
+
+          var textNode = document.createTextNode(self.childs[i].label);
+          textPath.appendChild(textNode);
         })(i);
       }
       this.addAnimationIn();
