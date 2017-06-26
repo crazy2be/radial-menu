@@ -136,13 +136,12 @@
       this.isOpened = true;
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.radiusSmall;
       this.radiusBig = this.radiusSmall + 50;
-      // building points for drawing
+
       var points = circlePoints(step, this.radiusBig, this.radiusSmall, 0, 0, this.options.spacing);
-      var childs_length = Object.keys(points).length;
       this.g = document.createElementNS(xmlns, "g");
       this.mainGroup.appendChild(this.g);
 
-      for (let i = 0; i < childs_length - 1; i++) {
+      for (let i = 0; i < points.length - 1; i++) {
         // ### Circle
         // TODO: This rotation logic is not quite right. It looks like it was wrong to begin with.
         // Basically the goal here is to change the diameter of the cicrle drawn when there are
