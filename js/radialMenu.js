@@ -61,7 +61,7 @@
     this.options = merge(defaults, options);
     this.init();
     this.svg = createElem(this.options["insert-at"], "svg",
-          {style: "position: absolute; left:0; top:0; margin:0;"});
+          {style: "position: absolute; overflow: visible; left:0; top:0; margin:0; width: 1px; height: 1px;"});
     this.svg.classList.add('radial-menu');
     this.mainGroup = createElem(this.svg, "g");
   };
@@ -147,7 +147,6 @@
         });
         textPath.appendChild(document.createTextNode(this.childs[i].label));
       }
-      this.recomputeBounds();
     },
 
     closeAllChildren: function () { this.childs.forEach(el => el.close()); },
@@ -156,20 +155,6 @@
       if (this.g) this.g.style.display = "none";
       if (!this.parent) this.svg.style.display = "none";
       this.closeAllChildren();
-    },
-
-    recomputeBounds: function () {
-      if (!this.childs.length) return;
-
-      var bbox = this.g.getBBox(), w = bbox.width + 100, h = bbox.height + 100;
-      var cw = parseInt(this.svg.getAttribute('width')) || 0;
-      var ch = parseInt(this.svg.getAttribute('height')) || 0;
-      if (cw >= w && ch >= h) return;
-
-      setAttrs(this.svg, {width: w+"px", height: h+"px"});
-      this.svg.style.marginLeft = (-w/2)+'px';
-      this.svg.style.marginTop = (-h/2)+'px';
-      setAttrs(this.mainGroup, {transform: 'translate('+w/2+','+h/2+')'});
     },
 
     /** method to add children */
