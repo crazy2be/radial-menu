@@ -71,19 +71,23 @@
       this.childs = [];
       this.items = [];
     },
-
+    root: function () {
+        if (this.parent) return this.parent.root();
+        else return this;
+    },
     open: function () {
+      this.root().close();
       this.svg.style.display = '';
       if (this.parent) {
-        this.parent.items.forEach(el => el.classList.remove('open'));
+        this.parent.open();
         var index = this.parent.childs.indexOf(this);
         this.parent.items[index].classList.add('open');
       }
       if (this.g) {
         this.g.style.display = '';
-        return;
+      } else {
+        this.buildChildren();
       }
-      this.buildChildren();
     },
 
     openAt: function (x, y) {
@@ -149,12 +153,11 @@
       }
     },
 
-    closeAllChildren: function () { this.childs.forEach(el => el.close()); },
-
     close: function () {
       if (this.g) this.g.style.display = "none";
       if (!this.parent) this.svg.style.display = "none";
-      this.closeAllChildren();
+      this.childs.forEach(c => c.close());
+      this.items.forEach(el => el.classList.remove('open'));
     },
 
     /** method to add children */
