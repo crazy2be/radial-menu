@@ -89,13 +89,11 @@
         this.buildChildren();
       }
     },
-
     openAt: function (x, y) {
       this.open();
       this.svg.style.left = x + 'px';
       this.svg.style.top = y + 'px';
     },
-
     buildChildren: function () {
       this.radiusSmall = this.parent ? this.parent.radiusBig + 10 : this.options["start-radius"];
       this.radiusBig = this.radiusSmall + 50;
@@ -152,23 +150,18 @@
         textPath.appendChild(document.createTextNode(this.childs[i].label));
       }
     },
-
     close: function () {
       if (this.g) this.g.style.display = "none";
       if (!this.parent) this.svg.style.display = "none";
       this.childs.forEach(c => c.close());
       this.items.forEach(el => el.classList.remove('open'));
     },
-
-    /** method to add children */
     add: function (label, options) {
       var child = new myMenuItem(label, merge(this.options, options), this);
       this.childs.push(child);
       return child;
     }
   };
-
-  /** myMenuItem constructor */
   var myMenuItem = function (label, options, parent) {
     this.label = label;
     this.options = options;
@@ -180,8 +173,6 @@
 
     this.init();
   };
-
   myMenuItem.prototype = radialMenu.prototype;
-
   window.radialMenu = radialMenu;
 })(window);
