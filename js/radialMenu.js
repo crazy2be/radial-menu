@@ -46,6 +46,45 @@
       "A", r(radius), r(radius), 0, ~~largeArcFlag, ~~sweep, r(end.x), r(end.y)];
   }
 
+  function buildSlice(radiusSmall, radiusBig, spacing, steps, i, opts, label, parent, svg) {
+    var item = createElem(parent, "g")
+    if (opts.class) item.classList.add(opts.class);
+
+    // ### Background
+    var circ = r => 2*Math.PI*r;
+    var spaceDeg = (spacing/2) * 360;
+    var spaceBig = spaceDeg / circ(radiusBig);
+    var spaceSmall = spaceDeg / circ(radiusSmall);
+    var pieSlice = createElem(item, "path", {
+        d: [].concat(
+        "M", describeArc(radiusBig, steps[i] + spaceBig, steps[i+1] - spaceBig, false),
+        "L", describeArc(radiusSmall, steps[i+1] - spaceSmall, steps[i] + spaceSmall, true),
+        "Z").join(" "),
+        "cursor": "pointer",
+        "style": opts["background-style"],
+    })
+
+    // ### Text
+    var text = createElem(item, "text", {
+        "text-anchor": "middle",
+        "pointer-events": "none",
+        "alignment-baseline": "baseline",
+        "style": opts["text-style"],
+    });
+
+    var radiusMid = (radiusBig + radiusSmall) / 2;
+    var start = steps[i], end = steps[i+1], sweep = end > 180;
+    if (sweep) [start, end] = [end, start];
+    var textPath = createElem(text, "textPath", {
+        "href": "#" + defsPath(svg, ["M"].concat(describeArc(radiusMid, start, end, sweep)).join(" ")),
+        "startOffset": "50%",
+        "alignment-baseline": "middle",
+    });
+    textPath.appendChild(document.createTextNode(label));
+
+    return item;
+  }
+
   var radialMenu = function (options) {
     var defaults = {
       "spacing": 10, // amount of space between menu items
@@ -108,46 +147,14 @@
       }
 
       for (let i = 0; i < this.childs.length; i++) {
-        let opts = this.childs[i].options;
-        var item = createElem(this.g, "g")
-        if (opts.class) item.classList.add(opts.class);
-        this.items.push(item);
-
-        // ### Background
-        var circ = r => 2*Math.PI*r;
-        var spaceDeg = (this.options.spacing/2) * 360;
-        var spaceBig = spaceDeg / circ(this.radiusBig);
-        var spaceSmall = spaceDeg / circ(this.radiusSmall);
-        var background = createElem(item, "path", {
-          d: [].concat(
-            "M", describeArc(this.radiusBig, steps[i] + spaceBig, steps[i+1] - spaceBig, false),
-            "L", describeArc(this.radiusSmall, steps[i+1] - spaceSmall, steps[i] + spaceSmall, true),
-            "Z").join(" "),
-          "cursor": "pointer",
-          "style": opts["background-style"],
-        })
-        background.onclick = (ev) => {
+        var item = buildSlice(this.radiusSmall, this.radiusBig, this.options.spacing, steps, i,
+                              this.childs[i].options, this.childs[i].label, this.g, this.svg);
+        item.onclick = (ev) => {
           this.childs[i].open(i);
-          if (opts.onclick) opts.onclick(ev);
+          var clk = this.childs[i].options.onclick;
+          if (clk) clk(ev);
         };
-
-        // ### Text
-        var text = createElem(item, "text", {
-          "text-anchor": "middle",
-          "pointer-events": "none",
-          "alignment-baseline": "baseline",
-          "style": opts["text-style"],
-        });
-
-        var radiusMid = (this.radiusBig + this.radiusSmall) / 2;
-        var start = steps[i], end = steps[i+1], sweep = end > 180;
-        if (sweep) [start, end] = [end, start];
-        var textPath = createElem(text, "textPath", {
-          "href": "#" + defsPath(this.svg, ["M"].concat(describeArc(radiusMid, start, end, sweep)).join(" ")),
-          "startOffset": "50%",
-          "alignment-baseline": "middle",
-        });
-        textPath.appendChild(document.createTextNode(this.childs[i].label));
+        this.items.push(item);
       }
     },
     close: function () {
