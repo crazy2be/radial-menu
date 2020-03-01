@@ -68,7 +68,7 @@
     var text = createElem(item, "text", {
         "text-anchor": "middle",
         "pointer-events": "none",
-        "alignment-baseline": "baseline",
+        "dominant-baseline": "middle",
         "style": opts["text-style"],
     });
 
@@ -78,7 +78,6 @@
     var textPath = createElem(text, "textPath", {
         "href": "#" + defsPath(svg, ["M"].concat(describeArc(radiusMid, start, end, sweep)).join(" ")),
         "startOffset": "50%",
-        "alignment-baseline": "middle",
     });
     textPath.appendChild(document.createTextNode(label));
 
